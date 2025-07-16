@@ -1,0 +1,26 @@
+{
+    "name": "ufee/amoapi-v4",
+    "homepage": "https://github.com/ufee",
+    "description": "https://www.amocrm.ru/developers/content/crm_platform/platform-abilities",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vlad Ionov",
+            "email": "vlad@ufee.ru",
+            "role": "Creator"
+        }
+    ],
+    "support": {
+        "email": "vlad@ufee.ru",
+        "issues": "https://github.com/ufee"
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ufee\\AmoV4\\": "src/"
+        }
+    }
+}
