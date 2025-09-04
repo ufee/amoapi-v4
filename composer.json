@@ -1,9 +1,18 @@
 {
     "name": "ufee/amoapi-v4",
-    "homepage": "https://github.com/ufee",
-    "description": "https://www.amocrm.ru/developers/content/crm_platform/platform-abilities",
+    "homepage": "https://github.com/ufee/amoapi-v4",
+    "description": "PHP API client for amoCRM (v4) with OAuth, caching, pagination and events",
     "type": "library",
     "license": "MIT",
+	"keywords": [
+		"amocrm",
+		"php",
+		"api",
+		"client",
+		"sdk",
+		"oauth",
+		"integration"
+	],
     "authors": [
         {
             "name": "Vlad Ionov",
@@ -13,7 +22,7 @@
     ],
     "support": {
         "email": "vlad@ufee.ru",
-        "issues": "https://github.com/ufee"
+        "issues": "https://github.com/ufee/amoapi-v4/issues"
     },
     "require": {
         "php": ">=7.4"
