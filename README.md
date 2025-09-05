@@ -183,6 +183,7 @@ $leads = $api->leads()->find([30013961,30013962,30013963]);
 $paginate = $api->leads()->paginate();
 $paginate->maxPages(10); // максимальное кол-во страниц
 $paginate->maxRows(100); // максимальное кол-во сущностей на странице
+
 do {
     echo "\nPage ".$paginate->page."\n";
     $leads = $paginate->fetchPage();
@@ -190,6 +191,12 @@ do {
 } while(
     $paginate->next()
 );
+
+// или так
+foreach($paginate as $page_num=>$leads) {
+    echo "\nPage ".$page_num."\n";
+	print_r($leads);
+}
 ```
 
 
