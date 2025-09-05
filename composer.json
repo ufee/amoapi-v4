@@ -1,11 +1,12 @@
 {
     "name": "ufee/amoapi-v4",
     "homepage": "https://github.com/ufee/amoapi-v4",
-    "description": "PHP API client for amoCRM (v4) with OAuth, caching, pagination and events",
+    "description": "PHP API client for amoCRM/Kommo (v4) with OAuth, caching, pagination and events",
     "type": "library",
     "license": "MIT",
 	"keywords": [
 		"amocrm",
+		"kommo",
 		"php",
 		"api",
 		"client",
