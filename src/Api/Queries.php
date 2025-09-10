@@ -32,7 +32,7 @@ class Queries extends Collection
 			$sleep_time = 0;
 			if ($query->instance->getParam('query_delay') > $time_offset) {
 				$sleep_time = (float)($query->instance->getParam('query_delay')-$time_offset);
-				usleep($sleep_time*1000000);
+				usleep((int)$sleep_time*1000000);
 			}
 			$query->setSleepTime($sleep_time);
 		});

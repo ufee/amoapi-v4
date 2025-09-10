@@ -405,8 +405,11 @@ class Query
 	 * @param resource $fp - fopen file
      * @return Query
      */
-    public function verbose(resource $fp)
+    public function verbose($fp)
     {
+		if (!is_resource($fp)) {
+			throw new \InvalidArgumentException('Parameter $fp must be a valid resource');
+		}
 		curl_setopt($this->curl, CURLOPT_VERBOSE, 1);
 		curl_setopt($this->curl, CURLOPT_STDERR, $fp);
 		return $this;

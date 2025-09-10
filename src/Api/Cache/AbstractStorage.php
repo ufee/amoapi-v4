@@ -10,6 +10,7 @@ class AbstractStorage
 	protected $domain;
 	protected $client_id;
 	protected $key;
+	protected $options;
 	
 	protected static $_local = [];
 

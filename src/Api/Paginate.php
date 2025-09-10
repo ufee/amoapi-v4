@@ -138,43 +138,41 @@ class Paginate implements \Iterator
 	
     /**
      * Check next page, data will be loaded lazily
-	 * @return bool
+	 * @return void
      */
-	public function next()
+	public function next(): void
 	{
 		if (!$this->hasNext()) {
-			return false;
+			return;
 		}
 		$this->page++;
 		$this->links = null;
 		$this->models = null;
 		
 		$this->query->setArgs(['page' => $this->page]);
-		return true;
 	}
 
     /**
      * Check prev page, data will be loaded lazily
-	 * @return bool
+	 * @return void
      */
-	public function prev()
+	public function prev(): void
 	{
 		if (!$this->hasPrev() || $this->page === 1) {
-			return false;
+			return;
 		}
 		$this->page--;
 		$this->links = null;
 		$this->models = null;
 		
 		$this->query->setArgs(['page' => $this->page]);
-		return true;
 	}
 	
     /**
      * Check valid next page
 	 * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         if ($this->page_limit > 0 && $this->page_loaded >= $this->page_limit) {
             return false;
@@ -189,7 +187,7 @@ class Paginate implements \Iterator
      * Rewind pages
 	 * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->setPageNum(1);
         $this->fetchPage();
@@ -199,7 +197,7 @@ class Paginate implements \Iterator
      * Get current page models
 	 * @return Entities
      */
-    public function current()
+    public function current(): mixed
     {
         return $this->fetchPage();
     }
@@ -208,7 +206,7 @@ class Paginate implements \Iterator
      * Get current page
 	 * @return integer
      */
-    public function key()
+    public function key(): mixed
     {
         return $this->page;
     }
