@@ -26,7 +26,7 @@ trait SearchByEmail
 			throw new Exceptions\AmoException('Invalid search email value: '.$email);
 		}
 		$field_name = 'Email';
-		$models = $this->search($query, $with)->pagesLimit($page_limit)->fetchAll();
+		$models = $this->search($query, $with)->maxPages($page_limit)->fetchAll();
 		$matches = $this->createCollection();
 
 		foreach ($models as $model) {

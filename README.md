@@ -315,13 +315,13 @@ $eventTypes = $api->cache->eventTypes($lang = null); // текущий язык 
 $users = $api->users()->get();
 // или из кеша
 $users = $api->cache->users();
-
+// пользователь по id
 $user = $api->cache->user(2787376);
 ```
 #### Кастомные поля аккаунта
 ```php
 $service = $api->customFields('contacts');
-$service = $api->customFields('catalogs', 6897);
+$service = $api->customFields('catalogs', $catalog_id);
 $service->maxPageRows(10);
 $service->orderBy('sort', 'desc');
 
@@ -329,7 +329,7 @@ $service->orderBy('sort', 'desc');
 $cfields = $service->get();
 // или из кеша
 $cfields = $api->cache->customFields('contacts');
-$cfields = $api->cache->customFields('catalogs', 6897);
+$cfields = $api->cache->customFields('catalogs', $catalog_id);
 ```
 Создание поля
 ```php
@@ -343,12 +343,70 @@ $cf->enums = [
 ];
 $cf->save();
 ```
+#### Кастомные сущности
+```php
+$lead = $api->leads()->find($lead_id);
+
+$cf = $lead->cf('Варианты оплаты');
+$cf->reset();
+$cf->setValues(['Онлайн','При получении']);
+$cf->setEnums([845234,945431]);
+$values = $cf->getValues();
+
+$cf = $lead->cf('Город');
+$cf->setValue('Москва');
+$cf->setEnum(546710);
+$value = $cf->getValue();
+
+$field = $cf->field;
+$enum_values = $field->getEnums();
+$enum_ids = $field->getEnumIds();
+$values = $field->getValues();
+$bool = $field->hasEnum(568345);
+$bool = $field->hasValue('Чебоксары');
+```
 #### Сделки
 ```php
 $leads = $api->leads()->get();
-$leads = $api->leads()->filter([...]);
 $leads = $api->leads;
+$leads = $api->leads()->searchByCustomField('Москва', 'Город', 1); // 1 page (250 rows max)
+$leads = $api->leads()->searchByName('Разработка ПО', 1, ['source_id','source']); // 1 page with source
 
-...
+$paginate = $api->leads()
+                ->orderBy('updated_at', 'desc')
+                ->with(['source_id','source','loss_reason'])
+                ->paginate();
+
+$paginate = $api->leads()->filter($conditions = [],  $with = []);
+$paginate = $api->leads()->search('VIP');
+
+$lead = $api->leads()->find($lead_id);
+$lead = $api->leads()->find($lead_ids, ['source_id','source']);
+$lead = $api->leads()->create(['name' => 'Новая сделка']);
+
+$lead->price = 100;
+$lead->status_id = 21776227;
+$lead->cf('Приоритет')->setValue('Высокий'); // set value name by cf name
+$lead->cf(123678)->setEnum(83565); // set enum id by cf id
+
+$lead->attachTag('Tag1');
+$lead->attachTag(['name' => 'Цветной', 'color' => 'FF8F92']);
+$lead->detachTag('Tag3');
+$tags = $lead->getTags();
+
+// replace all existing tags
+$lead->setTags($tags); // ids or names
+$lead->resetTags(); // replace with none
+
+$paginate = $lead->getTasks($filter = []);
+$tasks = $lead->getTasks($filter = [])->fetchAll();
+$task = $lead->findTask($task_id);
+$task = $lead->createTask($type = 1);
+
+$paginate = $lead->getNotes($filter = []);
+$notes = $lead->getNotes($filter = [])->fetchAll();
+$note = $lead->findTask($task_id);
+$note = $lead->createNote($type = 'common');
+
 ```
 

@@ -26,7 +26,7 @@ trait SearchByName
 		if (strlen($query) < 3) {
 			throw new Exceptions\AmoException('Invalid search name: '.$query);
 		}
-		$models = $this->search($query, $with)->pagesLimit($page_limit)->fetchAll();
+		$models = $this->search($query, $with)->maxPages($page_limit)->fetchAll();
 		$matches = $this->createCollection();
 
 		foreach ($models as $model) {

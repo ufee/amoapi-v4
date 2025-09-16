@@ -6,6 +6,7 @@ namespace Ufee\AmoV4\Api;
 use Ufee\AmoV4\Services\Service;
 use Ufee\AmoV4\Collections\Entities;
 use Ufee\AmoV4\Api\Query;
+use Ufee\AmoV4\Exceptions;
 
 class Paginate implements \Iterator
 {
@@ -232,7 +233,8 @@ class Paginate implements \Iterator
 		$data = $response->validated();
 
 		if (!isset($data->_page)) {
-			throw new Exceptions\AmoException('Invalid API response (no page), code: ' . $response->getCode(), $response->getCode());
+			$data->_page = 1;
+			//throw new Exceptions\AmoException('Invalid API response (no page), code: ' . $response->getCode(), $response->getCode());
 		}
 		$this->page = $data->_page;
 		$entity_key = $this->service->entity_key;

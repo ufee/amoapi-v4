@@ -151,10 +151,11 @@ class Query
 	
     /**
      * Set post json data
-     * @param array $data
+     * @param array|object $data
      */
-    public function setJsonData(array $data = [])
+    public function setJsonData($data = [])
     {
+		$data = is_object($data) ? (array)$data : $data;
 		foreach ($data as $key=>$val) {
 			$this->attributes['json_data'][$key] = $val;
 		}

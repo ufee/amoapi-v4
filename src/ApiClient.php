@@ -16,21 +16,24 @@ if (!defined('AMOV4API_ROOT')) {
  * @property string $client_id
  *
  * @method \Ufee\AmoV4\Services\Account account(...$args)
+ * @method \Ufee\AmoV4\Services\Users users(...$args)
+ * @method \Ufee\AmoV4\Services\Pipelines pipelines(...$args)
+ * @method \Ufee\AmoV4\Services\CustomFields customFields(...$args)
  * @method \Ufee\AmoV4\Services\Leads leads(...$args)
  * @method \Ufee\AmoV4\Services\Contacts contacts(...$args)
  * @method \Ufee\AmoV4\Services\Companies companies(...$args)
+ * @method \Ufee\AmoV4\Services\Links links(...$args)
  * @method \Ufee\AmoV4\Services\Tasks tasks(...$args)
  * @method \Ufee\AmoV4\Services\Notes notes(...$args)
  * @method \Ufee\AmoV4\Services\Events events(...$args)
  * @method \Ufee\AmoV4\Services\Webhooks webhooks(...$args)
- * @method \Ufee\AmoV4\Services\CustomFields customFields(...$args)
- * @method \Ufee\AmoV4\Services\Users users(...$args)
  */
 class ApiClient
 {
 	protected $services = [
 		'account',
 		'users',
+		'pipelines',
 		'customFields',
 		'leads',
 		'contacts',

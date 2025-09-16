@@ -43,7 +43,7 @@ trait SearchByPhone
 		if (strlen($query) < 6) {
 			throw new \Exception('Invalid search phone value: '.$phone);
 		}
-		$models = $this->search($query, $with)->pagesLimit($page_limit)->fetchAll();
+		$models = $this->search($query, $with)->maxPages($page_limit)->fetchAll();
 		$matches = $this->createCollection();
 
 		foreach ($models as $model) {
