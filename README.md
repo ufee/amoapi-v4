@@ -80,6 +80,7 @@ $api->oauth->setStorageMongo($mongo);
 $api->cache->setTtl([
     'account'      => 60, // 3600
     'users'        => 60, // 1800
+    'pipelines'    => 60, // 3600
     'userGroups'   => 60, // 3600
     'customFields' => 60, // 1800
     'taskTypes'    => 60, // 3600
@@ -182,6 +183,8 @@ $api->oauth->fetchToken($code); // токен сохранится в выбра
 $service = $api->account();
 $api->users();
 $api->customFields($entity_type);
+$api->pipelines();
+$api->pipelineStatuses($pipeline_id);
 $api->leads();
 $api->contacts();
 $api->companies();
