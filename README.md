@@ -25,6 +25,13 @@ composer require ufee/amoapi-v4
 ```
 
 ## ⚙️ Быстрый старт
+```php
+$api = \Ufee\AmoV4\ApiClient::setInstance([...]);
+$leads = $api->leads()->get();
+foreach ($leads as $lead) {
+    echo $lead->name . "\n";
+}
+```
 
 ### Определение клиента  
 ```php
@@ -58,7 +65,7 @@ $api->oauth->setLongToken($long_token);
 Поддерживается библиотека [phpredis](https://github.com/phpredis/phpredis)
 ```php
 $redis = new \Redis();
-redis->connect('127.0.0.1');
+$redis->connect('127.0.0.1');
 $redis->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_PHP); // или \Redis::SERIALIZER_IGBINARY
 $redis->select(4);
 
