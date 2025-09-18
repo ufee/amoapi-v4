@@ -22,6 +22,7 @@ class Cache
 	protected $ttl = [
 		'account'      => 3600,
 		'users'        => 1800,
+		'pipelines'    => 3600,
 		'userGroups'   => 3600,
 		'customFields' => 1800,
 		'taskTypes'    => 3600,
@@ -55,6 +56,32 @@ class Cache
 		return $model;
 	}
 
+    /**
+     * Get cached Pipelines
+	 * @return Collections\Pipelines
+     */
+	public function pipelines()
+	{
+		$key = 'pipelines';
+		$ttl = $this->ttl['pipelines'];
+		
+		if (!$models = $this->storage->get($key)) {
+			$models = $this->instance->pipelines()->get();
+			$this->storage->set($key, $models, $ttl);
+		}
+		return $models;
+	}
+	
+    /**
+     * Get cached Pipeline
+	 * @param int $pipeline_id
+	 * @return Models\Pipeline|null
+     */
+	public function pipeline(int $pipeline_id)
+	{
+		return $this->pipelines()->where('id', $pipeline_id)->first();
+	}
+	
     /**
      * Get cached Users
 	 * @param array $with

@@ -45,6 +45,10 @@ class Response
 			throw new Exceptions\UnauthorizedException($response->detail, $this->getCode());
 		}
 		if ($this->getCode() === 400 && property_exists($response, 'detail')) {
+			$val_errors = $response->{'validation-errors'} ?? [];
+			if ($row = current($val_errors)) {
+				$response->detail .= ': '.json_encode($row->errors);
+			}
 			throw new Exceptions\AmoException($response->detail, $this->getCode());
 		}
 		return $response;

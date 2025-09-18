@@ -231,18 +231,13 @@ class Paginate implements \Iterator
 			return $this;
 		}
 		$data = $response->validated();
-
-		if (!isset($data->_page)) {
-			$data->_page = 1;
-			//throw new Exceptions\AmoException('Invalid API response (no page), code: ' . $response->getCode(), $response->getCode());
-		}
-		$this->page = $data->_page;
 		$entity_key = $this->service->entity_key;
 		
 		if (!isset($data->_embedded->{$entity_key})) {
 			throw new Exceptions\AmoException('Invalid API response (no ' . $entity_key . '), code: ' . $response->getCode(), $response->getCode());
 		}
-		$this->links = $data->_links;
+		$this->page = $data->_page ?? 1;
+		$this->links = $data->_links ?? (object)[];
 		$this->models = $this->service->createCollection($data->_embedded->{$entity_key});
 		$this->page_loaded++;
 		return $this;

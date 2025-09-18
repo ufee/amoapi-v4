@@ -140,6 +140,16 @@ class Model
 	}
 	
     /**
+     * Set field value
+	 * @param string $field
+	 * @param mixed $value
+     */
+	public function set(string $field, $value)
+	{
+		$this->$field = $value;
+	}
+	
+    /**
      * Silent set field value
 	 * @param string $field
 	 * @param mixed $value

@@ -97,7 +97,7 @@ class Service
 			$query->setArgs($query_args);
 			$query->execute();
 			
-			if ($query->response->getCode() === 204) {
+			if (in_array($query->response->getCode(), [204, 404])) {
 				return null;
 			}
 			$row = $query->response->validated();
