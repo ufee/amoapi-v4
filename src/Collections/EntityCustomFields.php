@@ -34,7 +34,7 @@ class EntityCustomFields
 	 * @param array $entity_cfields
 	 * @param WithCfield $model
 	 */
-	public function __construct(array $entity_cfields = [], WithCfield $model)
+	public function __construct(array $entity_cfields, WithCfield $model)
 	{
 		$this->collection = new Collection();
 		$this->model = $model;
@@ -47,6 +47,16 @@ class EntityCustomFields
 			);
 		}
 	}
+	
+    /**
+     * Get all cfields
+	 * @return Collection
+     */
+    public function all()
+    {
+		return $this->collection;
+    }
+    
 	
     /**
      * Get cf by name

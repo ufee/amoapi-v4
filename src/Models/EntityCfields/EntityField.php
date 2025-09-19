@@ -29,7 +29,7 @@ class EntityField
 		if (!isset($this->data->values[0])) {
 			return null;
 		}
-		return $this->data->values[0]->value;
+		return $this->data->values[0]->value ?? $this->data->values[0];
 	}
 
     /**
