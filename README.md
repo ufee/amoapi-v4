@@ -397,7 +397,11 @@ $cf->setValues(['Онлайн','При получении']);
 $cf->setEnums([845234,945431]);
 $values = $cf->getValues();
 
+// поле по названию
 $cf = $lead->cf('Город');
+// поле по id
+$cf = $lead->cf(3745829);
+
 $cf->setValue('Москва');
 $cf->setEnum(546710);
 $value = $cf->getValue();
@@ -408,11 +412,23 @@ $enum_ids = $field->getEnumIds();
 $values = $field->getValues();
 $bool = $field->hasEnum(568345);
 $bool = $field->hasValue('Чебоксары');
+
+$cf = $lead->cf()->byName('Город');
+$cf = $lead->cf()->byId(3745829);
+$cf = $lead->cf()->byCode('PHONE');
+$cf = $lead->cf()->byType('radiobutton');
+
+$cfields = $lead->cf()->all();
+foreach($cfs as $cf) {
+    print_r($cf->getValue());
+    echo "\n";
+}
 ```
 #### Сделки
 ```php
 $leads = $api->leads()->get();
 $leads = $api->leads;
+$leads = $api->leads()->with(['source_id','source']))->get();
 $leads = $api->leads()->searchByCustomField('Москва', 'Город', 1); // 1 page (250 rows max)
 $leads = $api->leads()->searchByName('Разработка ПО', 1, ['source_id','source']); // 1 page with source
 
