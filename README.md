@@ -53,7 +53,7 @@ $api->setParam('lang', 'ru');          // язык аккаунта
 
 ### Хранилище Oauth 
 Файловое хранение OAuth-токенов  
-Используется по умолчанию: /src/Temp/{domain}/{client_id}.json
+Используется по умолчанию: `/src/Temp/{domain}/{client_id}.json`  
 ```php
 $api->oauth->setStorageFiles('/path/to/oauth/storage');
 ```
@@ -95,7 +95,7 @@ $api->cache->setTtl([
 ]);
 ```
 Файловое хранение OAuth-токенов  
-Используется по умолчанию: /src/Temp/{domain}/{client_id}.{key}.cache
+Используется по умолчанию: `/src/Temp/{domain}/{client_id}.{key}.cache`  
 ```php
 $api->cache->setStorageFiles('/path/to/cache/storage', [
     'serialize'   => 'igbinary_serialize', // рекомендуется вместо serialize
@@ -261,18 +261,19 @@ $company = $api->companies()->find(55968943);
 
 $leads = $api->leads()->find([30013961,30013962,30013963]);
 ```
-#### Постраничное получение 
+#### Постраничное получение  
+Осуществляется на основании `_links->next->href` из ответа  
 ```php
 $paginate = $api->leads()->paginate();
 $paginate->maxPages(10); // максимальное кол-во страниц
 $paginate->maxRows(100); // максимальное кол-во сущностей на странице
 
 do {
-    echo "\nPage ".$paginate->page."\n";
     $leads = $paginate->fetchPage();
+    echo "\nPage ".$paginate->page."\n";
     print_r($leads); // collection
 } while(
-    $paginate->next();
+    $paginate->nextPage();
 );
 
 // или так
@@ -280,6 +281,20 @@ foreach($paginate as $page_num=>$leads) {
     echo "\nPage ".$page_num."\n";
     print_r($leads); // collection
 }
+```
+В некоторых случаях `_links->next->href` отсутствует в ответе, но следующие страницы при этом существуют, в таком случае можно принудительно получить все страницы, как это делается в `$paginate->fetchAll();`  
+```php
+$paginate->maxPages(10);
+while (
+    $paginate->valid() && ($leads = $paginate->fetchPage()) && $leads->count()
+) {
+    echo "\nPage ".$paginate->page."\n";
+    print_r($leads); // collection
+    $paginate->setPageNum($paginate->page+1);
+}
+
+// или так
+$leads = $paginate->fetchAll($max_pages);
 ```
 #### Фильтрация сущностей
 ```php
