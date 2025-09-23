@@ -27,6 +27,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Tasks tasks(...$args)
  * @method \Ufee\AmoV4\Services\Notes notes(...$args)
  * @method \Ufee\AmoV4\Services\Events events(...$args)
+ * @method \Ufee\AmoV4\Services\Widgets widgets(...$args)
  * @method \Ufee\AmoV4\Services\Webhooks webhooks(...$args)
  */
 class ApiClient
@@ -44,6 +45,7 @@ class ApiClient
 		'tasks',
 		'notes',
 		'events',
+		'widgets',
 		'webhooks'
 	];
 	protected $_params = [
@@ -57,7 +59,7 @@ class ApiClient
 		'lang' => 'ru',
 		'user_agent' => 'Amoapi v4'
 	];
-	protected $_account = [];
+	protected $_integration = [];
 	
 	protected static $_cache = [];
 	protected static $_oauth = [];
@@ -71,7 +73,7 @@ class ApiClient
 	 */
 	private function __construct(array $account)
 	{
-		$this->_account = $account;
+		$this->_integration = $account;
 		$this->_params['crm_host'] = $account['zone'] == 'com' ? $account['domain'] . '.kommo.com' : $account['domain'] . '.amocrm.ru';
 	}
 	
@@ -125,8 +127,8 @@ class ApiClient
 	 */
 	public function setIntegration(string $key, $value)
 	{
-		if (array_key_exists($key, $this->_account)) {
-			$this->_account[$key] = $value;
+		if (array_key_exists($key, $this->_integration)) {
+			$this->_integration[$key] = $value;
 		}
 		return $this;
 	}
@@ -139,16 +141,16 @@ class ApiClient
 	public function getIntegration($key = null)
 	{
 		if ($key == 'id') {
-			return $this->_account['client_id'];
+			return $this->_integration['client_id'];
 		}
-		if (!is_null($key) && isset($this->_account[$key])) {
-			return $this->_account[$key];
+		if (!is_null($key) && isset($this->_integration[$key])) {
+			return $this->_integration[$key];
 		}
-		return $this->_account;
+		return $this->_integration;
 	}
 
 	/**
-	 * Set account instance
+	 * Set client instance
 	 * @param array $data
 	 * @return ApiClient
 	 */
@@ -179,7 +181,7 @@ class ApiClient
 	}
 
 	/**
-	 * Get account instance
+	 * Get client instance
 	 * @param string $client_id
 	 * @return ApiClient
 	 */
@@ -192,7 +194,7 @@ class ApiClient
 	}
 
 	/**
-	 * Has account isset
+	 * Has client isset
 	 * @param string $client_id
 	 * @return bool
 	 */
@@ -202,7 +204,7 @@ class ApiClient
 	}
 
 	/**
-	 * Has account isset
+	 * Remove client isset
 	 * @param string $client_id
 	 * @return ApiClient
 	 */

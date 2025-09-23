@@ -29,6 +29,7 @@ class Paginate implements \Iterator
     {
         $this->query = $query;
         $this->service = $service;
+		$this->query->setArgs(['page' => $this->page]);
 	}
 	
     /**
@@ -47,6 +48,10 @@ class Paginate implements \Iterator
      */
 	public function setPageNum(int $page)
 	{
+		if ($this->page !== $page) {
+			$this->links = null;
+			$this->models = null;
+		}
 		$this->page = $page;
 		$this->query->setArgs(['page' => $this->page]);
 		return $this;
@@ -94,9 +99,12 @@ class Paginate implements \Iterator
      */
 	public function fetchAll(int $max_pages = 0)
 	{
-		$models = $this->fetchPage();
-		while ($this->next() && (!$max_pages || $this->page_loaded <= $max_pages)) {
-			$models->merge($this->fetchPage());
+		$models = $this->service->createCollection();
+		while (
+			$this->valid() && ($new = $this->fetchPage()) && $new->count() && (!$max_pages || $this->page_loaded <= $max_pages)
+		) {
+			$models->merge($new);
+			$this->setPageNum($this->page+1);
 		}
 		return $models;
 	}
@@ -107,7 +115,7 @@ class Paginate implements \Iterator
      */
 	public function hasNext()
 	{
-		if ($this->page_limit > 0 &&  $this->page_loaded >= $this->page_limit) {
+		if ($this->page_limit > 0 && $this->page_loaded >= $this->page_limit) {
 			return false;
 		}
 		if (!$this->links) {
@@ -118,32 +126,14 @@ class Paginate implements \Iterator
 		}
 		return true;
 	}
-	
-    /**
-     * Check prev page
-	 * @return bool
-     */
-	public function hasPrev()
-	{
-		if ($this->page_limit > 0 &&  $this->page_loaded >= $this->page_limit) {
-			return false;
-		}
-		if (!$this->links) {
-			$this->load();
-		}
-		if (!isset($this->links->first) || !isset($this->links->first->href)) {
-			return false;
-		}
-		return true;
-	}
-	
+
     /**
      * Check next page, data will be loaded lazily
 	 * @return void
      */
 	public function next(): void
 	{
-		if (!$this->hasNext()) {
+		if (!isset($this->links->next) || !isset($this->links->next->href)) {
 			return;
 		}
 		$this->page++;
@@ -152,21 +142,18 @@ class Paginate implements \Iterator
 		
 		$this->query->setArgs(['page' => $this->page]);
 	}
-
+	
     /**
-     * Check prev page, data will be loaded lazily
-	 * @return void
+     * Switch to next page
+	 * @return bool
      */
-	public function prev(): void
+	public function nextPage()
 	{
-		if (!$this->hasPrev() || $this->page === 1) {
-			return;
+		if (!$this->hasNext()) {
+			return false;
 		}
-		$this->page--;
-		$this->links = null;
-		$this->models = null;
-		
-		$this->query->setArgs(['page' => $this->page]);
+		$this->next();
+		return true;
 	}
 	
     /**
@@ -181,7 +168,8 @@ class Paginate implements \Iterator
         if ($this->page === 1 && !$this->models) {
             return true;
         }
-        return $this->hasNext();
+		$has_next = $this->page > $this->page_loaded;
+        return $has_next;
     }
 	
     /**
@@ -189,9 +177,11 @@ class Paginate implements \Iterator
 	 * @return void
      */
     public function rewind(): void
-    {
+    {		
         $this->setPageNum(1);
-        $this->fetchPage();
+		$this->page_loaded = 0;
+		$this->links = null;
+		$this->models = null;
     }
 	
     /**
@@ -199,7 +189,7 @@ class Paginate implements \Iterator
 	 * @return Entities
      */
     public function current(): mixed
-    {
+    {		
         return $this->fetchPage();
     }
 
