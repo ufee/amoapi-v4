@@ -79,20 +79,22 @@ class Service
 	
     /**
      * Find entities by id
-	 * @param int|array $elem_id - ir or ids
+	 * @param string|int|array $elem_id - ir or ids
 	 * @param array $with
 	 * @return Model|null
      */
 	public function find($elem_id, $with = [])
 	{
-		if (!is_int($elem_id) && !is_array($elem_id)) {
-			throw new \InvalidArgumentException('Element ID must be integer or array of integers');
+		if (!is_string($elem_id) && !is_int($elem_id) && !is_array($elem_id)) {
+			throw new \InvalidArgumentException('Element ID must be integer/string or array of integers');
 		}
 		$query_args = $this->query_args;
 		if (!empty($with)) {
 			$query_args['with'] = join(',', $with);
 		}
-		if (is_int($elem_id)) {
+		if (is_array($elem_id)) {
+			return $this->filter(['id' => $elem_id], $with)->fetchAll();
+		} else {
 			$query = $this->instance->query('GET', $this->api_path.'/'.$elem_id);
 			$query->setArgs($query_args);
 			$query->execute();
@@ -103,8 +105,6 @@ class Service
 			$row = $query->response->validated();
 			$entity_model = $this->entity_model;
 			return new $entity_model((array)$row, $this);
-		} else {
-			return $this->filter(['id' => $elem_id], $with)->fetchAll();
 		}
 	}
 	

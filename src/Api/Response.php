@@ -49,7 +49,7 @@ class Response
 			if ($row = current($val_errors)) {
 				$response->detail .= ': '.json_encode($row->errors);
 			}
-			throw new Exceptions\AmoException($response->detail, $this->getCode());
+			throw new Exceptions\ValidatorException($response->detail, $this->getCode());
 		}
 		return $response;
 	}
