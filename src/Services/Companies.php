@@ -13,6 +13,8 @@ class Companies extends Service
 	use Traits\Cfields;
 	use Traits\Notes;
 	
+	const PHONE_RU_MOB = 'ru_mob';
+	
 	protected $api_path = '/api/v4/companies';
 	protected $entity_key = 'companies';
 

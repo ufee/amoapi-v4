@@ -9,7 +9,7 @@ class Widget extends Model
     /**
      * Install widget
 	 * @param array $settings
-	 * @return bool
+	 * @return Widget
      */
     public function install(array $settings)
     {
