@@ -19,6 +19,8 @@ class Paginate implements \Iterator
 	
 	protected $page_limit = 0;
 	protected $page_loaded = 0;
+	protected $total_items = 0;
+	protected $models_loaded = 0;
 		
     /**
      * Constructor
@@ -165,6 +167,9 @@ class Paginate implements \Iterator
         if ($this->page_limit > 0 && $this->page_loaded >= $this->page_limit) {
             return false;
         }
+        if ($this->total_items && $this->models_loaded >= $this->total_items) {
+            return false;
+        }
         if ($this->page === 1 && !$this->models) {
             return true;
         }
@@ -180,6 +185,7 @@ class Paginate implements \Iterator
     {		
         $this->setPageNum(1);
 		$this->page_loaded = 0;
+		$this->models_loaded = 0;
 		$this->links = null;
 		$this->models = null;
     }
@@ -229,6 +235,8 @@ class Paginate implements \Iterator
 		$this->page = $data->_page ?? 1;
 		$this->links = $data->_links ?? (object)[];
 		$this->models = $this->service->createCollection($data->_embedded->{$entity_key});
+		$this->models_loaded += $this->models->count();
+		$this->total_items = $data->_total_items ?? 0;
 		$this->page_loaded++;
 		return $this;
 	}
