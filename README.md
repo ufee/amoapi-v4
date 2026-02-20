@@ -94,13 +94,19 @@ $api->cache->setTtl([
     'eventTypes'   => 60  // 86400
 ]);
 ```
-Файловое хранение OAuth-токенов  
+Файловое хранение кэша
 Используется по умолчанию: `/src/Temp/{domain}/{client_id}.{key}.cache`  
 ```php
 $api->cache->setStorageFiles('/path/to/cache/storage', [
     'serialize'   => 'igbinary_serialize', // рекомендуется вместо serialize
     'unserialize' => 'igbinary_unserialize' // рекомендуется вместо unserialize
 ]);
+```
+Очистка кеша
+```php
+$api->cache->clear('account');
+$api->cache->clear('customFields');
+$api->cache->clear('taskTypes');
 ```
 **Redis**  
 Поддерживается библиотека [phpredis](https://github.com/phpredis/phpredis)
@@ -343,6 +349,9 @@ $taskTypes = $account->taskTypes; // collection
 $userGroups = $api->cache->userGroups();
 $taskTypes = $api->cache->taskTypes();
 $eventTypes = $api->cache->eventTypes($lang = null); // текущий язык по умолчанию
+
+// очистка кеша
+$api->cache->clear('account');
 ```
 #### Пользователи аккаунта
 ```php
@@ -537,4 +546,21 @@ $installed = $widget->install([
 $bool = $api->widgets()->uninstall('amo_asterisk');
 // или через модель
 $bool = $widget->uninstall();
+```
+
+#### Вебхуки
+```php
+// получение всех вебхуков
+$webhooks = $this->crm->webhooks()->get();
+// или конкретных по url
+$webhooks = $this->crm->webhooks()->get($some_url);
+
+foreach($webhooks as $webhook) {
+    // отписка
+    $webhook->unsubscribe();
+}
+// подписка на вебхук
+$webhook = $this->crm->webhooks()->subscribe($some_url, ['note_lead','note_contact','...']);
+// отписка
+$result = $this->crm->webhooks()->unsubscribe($some_url);
 ```
