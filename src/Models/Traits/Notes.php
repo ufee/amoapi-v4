@@ -13,9 +13,9 @@ trait Notes
 	 * @param int $note_id
 	 * @return Note|null;
      */
-	public function findNote(int $note_id)
+	public function findNote(int $note_id, $with = ['is_pinned'])
 	{
-		return $this->notes()->find($note_id);
+		return $this->notes()->find($note_id, $with);
 	}
 	
     /**
@@ -23,9 +23,9 @@ trait Notes
 	 * @param array $conditions - filter
 	 * @return Paginate;
      */
-	public function getNotes(array $conditions = [])
+	public function getNotes(array $conditions = [], $with = ['is_pinned'])
 	{
-		return $this->notes()->filter($conditions);
+		return $this->notes()->filter($conditions, $with);
 	}
 
     /**
