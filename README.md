@@ -33,7 +33,7 @@ foreach ($leads as $lead) {
 }
 ```
 
-### Определение клиента  
+### Определение клиента
 ```php
 $api = \Ufee\AmoV4\ApiClient::setInstance([
     'domain'        => 'yourdomain',           // домен (без .amocrm.ru)
@@ -44,24 +44,24 @@ $api = \Ufee\AmoV4\ApiClient::setInstance([
 ]);
 ```
 
-### Настройка параметров (опционально)  
+### Настройка параметров (опционально)
 ```php
 $api->setParam('query_delay', 0.15);   // задержка между запросами (сек)
 $api->setParam('query_retries', 3);    // кол-во попыток при ошибках 429
 $api->setParam('lang', 'ru');          // язык аккаунта
 ```
 
-### Хранилище Oauth 
-Файловое хранение OAuth-токенов  
-Используется по умолчанию: `/src/Temp/{domain}/{client_id}.json`  
+### Хранилище Oauth
+Файловое хранение OAuth-токенов
+Используется по умолчанию: `/src/Temp/{domain}/{client_id}.json`
 ```php
 $api->oauth->setStorageFiles('/path/to/oauth/storage');
 ```
-**Долгосрочный токен**  
+**Долгосрочный токен**
 ```php
 $api->oauth->setLongToken($long_token);
 ```
-**Redis**  
+**Redis**
 Поддерживается библиотека [phpredis](https://github.com/phpredis/phpredis)
 ```php
 $redis = new \Redis();
@@ -71,7 +71,7 @@ $redis->select(4);
 
 $api->oauth->setStorageRedis($redis);
 ```
-**Mongodb**  
+**Mongodb**
 Поддерживается библиотека [mongo-php-library](https://github.com/mongodb/mongo-php-library)
 ```php
 $mongo = new \MongoDB\Client('mongodb://127.0.0.1');
@@ -80,8 +80,8 @@ $collection = $mongo->selectCollection('amo', 'oauth');
 $api->oauth->setStorageMongo($mongo);
 ```
 
-### Кеширование данных  
-Поддерживается кеширование справочников и общих данных аккаунта  
+### Кеширование данных
+Поддерживается кеширование справочников и общих данных аккаунта
 Время жизни для кэша / по умолчанию
 ```php
 $api->cache->setTtl([
@@ -95,7 +95,7 @@ $api->cache->setTtl([
 ]);
 ```
 Файловое хранение кэша
-Используется по умолчанию: `/src/Temp/{domain}/{client_id}.{key}.cache`  
+Используется по умолчанию: `/src/Temp/{domain}/{client_id}.{key}.cache`
 ```php
 $api->cache->setStorageFiles('/path/to/cache/storage', [
     'serialize'   => 'igbinary_serialize', // рекомендуется вместо serialize
@@ -108,7 +108,7 @@ $api->cache->clear('account');
 $api->cache->clear('customFields');
 $api->cache->clear('taskTypes');
 ```
-**Redis**  
+**Redis**
 Поддерживается библиотека [phpredis](https://github.com/phpredis/phpredis)
 ```php
 $redis = new \Redis();
@@ -119,8 +119,8 @@ $redis->select(4);
 $api->cache->setStorageRedis($redis);
 ```
 
-### 🔔 События (Callbacks)  
-Мониторинг запросов, логирование, обработка ошибок, контроль  
+### 🔔 События (Callbacks)
+Мониторинг запросов, логирование, обработка ошибок, контроль
 ```php
 $api->callbacks->on($event, function($payload) {
    // подписка на события
@@ -131,7 +131,7 @@ $api->callbacks->off($event, function($payload) {
    // отписка от событий
 });
 ```
-Поддерживаемые события  
+Поддерживаемые события
 События по query выполняются в последовательности, указанной ниже
 ```php
 $api->callbacks->off('query.delay')->on('query.delay', function($query) {
@@ -185,7 +185,7 @@ $api->callbacks->on('oauth.token.refresh.error', function($exc, $query = null, $
     // вызывается после неудачного обновления токена
 });
 ```
-### 🔐 Первичное получение OAuth-токена 
+### 🔐 Первичное получение OAuth-токена
 ```php
 $api->oauth->fetchToken($code); // токен сохранится в выбранном storage
 ```
@@ -197,7 +197,7 @@ $raw = $query->response->validated();
 print_r($raw); // object of lead
 echo $raw->name;
 ```
-### 📥 Работа с сущностями  
+### 📥 Работа с сущностями
 Производится через сервисы:
 ```php
 // получение экземпляра сервиса
@@ -215,6 +215,7 @@ $api->notes($entity_type);
 $api->events();
 $api->widgets();
 $api->webhooks();
+$api->bots();
 ```
 Установка параметров
 ```php
@@ -234,41 +235,41 @@ $paginate = $service->filter($conditions, $with = []);
 $paginate = $service->search($phrase, $with = []);
 
 ```
-Создание/обновление сущностей через сырые данные  
-$raw_data может быть объектом или массивом объектов  
+Создание/обновление сущностей через сырые данные
+$raw_data может быть объектом или массивом объектов
 На практике не применяется, так как действие производится через модель
 ```php
 $raw_response = $service->add($raw_data);
 $raw_response = $service->update($raw_data);
 ```
-#### Модель сущности  
+#### Модель сущности
 Поля моделей динамические, реализованы через геттеры и сеттеры
 ```php
 $model = $service->create(['field1' => 'value', 'field2' => 'value', ...]);
-// или 
+// или
 $model = $service->find(123567);
 
 $model->name = 'Name';
 $model->price = 100;
 $model->save(); // создание или обновление сущности под капотом
-$model->toArray(); 
+$model->toArray();
 ```
-#### Коллекция сущностей  
+#### Коллекция сущностей
 ```php
 $models = $service->createCollection([
     ['field1' => 'value', 'field2' => 'value', ...],
     ['field1' => 'value', 'field2' => 'value', ...],
 ]);
-// или 
+// или
 $models = $service->get();
 
 foreach($models as $model) {
     $model->attachTag('AmoV4');
 }
 $models->save(); // массовое создание или обновление сущностей под капотом
-$models->toArray(); 
+$models->toArray();
 ```
-#### Получение сущностей по ID  
+#### Получение сущностей по ID
 ```php
 $lead = $api->leads()->find(30013961);
 $contact = $api->contacts()->find(45968927);
@@ -276,8 +277,8 @@ $company = $api->companies()->find(55968943);
 
 $leads = $api->leads()->find([30013961,30013962,30013963]);
 ```
-#### Постраничное получение  
-Осуществляется на основании `_links->next->href` из ответа  
+#### Постраничное получение
+Осуществляется на основании `_links->next->href` из ответа
 ```php
 $paginate = $api->leads()->paginate();
 $paginate->maxPages(10); // максимальное кол-во страниц
@@ -297,7 +298,7 @@ foreach($paginate as $page_num=>$leads) {
     print_r($leads); // collection
 }
 ```
-В некоторых случаях `_links->next->href` отсутствует в ответе, но следующие страницы при этом существуют, в таком случае можно принудительно получить все страницы, как это делается в `$paginate->fetchAll();`  
+В некоторых случаях `_links->next->href` отсутствует в ответе, но следующие страницы при этом существуют, в таком случае можно принудительно получить все страницы, как это делается в `$paginate->fetchAll();`
 ```php
 $paginate->maxPages(10);
 while (
@@ -563,4 +564,31 @@ foreach($webhooks as $webhook) {
 $webhook = $this->crm->webhooks()->subscribe($some_url, ['note_lead','note_contact','...']);
 // отписка
 $result = $this->crm->webhooks()->unsubscribe($some_url);
+```
+
+#### Bots
+```php
+// запуск Bot (до 100 задач за запрос)
+// вариант 1: массив задач
+$is_started = $api->bots()->run([
+    [
+        'bot_id' => 565,
+        'entity_id' => 76687686,
+        'entity_type' => 'leads', // leads|contacts|customers
+    ],
+]);
+
+// вариант 2: 3 параметра (bot_id, entity_id, entity_type)
+$is_started = $api->bots()->run(
+    $bot_id = 565,
+    $entity_id = 76687686,
+    $entity_type = 'contacts' // leads|contacts|customers
+);
+
+// остановка Bot для сделки
+$is_stopped = $api->bots()->stop(
+    $bot_id = 565,
+    $entity_id = 23890022,
+    $entity_type = 'leads' // leads|customers
+);
 ```
