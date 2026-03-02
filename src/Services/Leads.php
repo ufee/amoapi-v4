@@ -16,4 +16,13 @@ class Leads extends Service
 
 	protected $entity_model = '\Ufee\AmoV4\Models\Lead';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\Leads';
+
+	/**
+	 * Get leads loss reasons service
+	 * @return LossReasons
+	 */
+	public function lossReasons()
+	{
+		return $this->instance->lossReasons();
+	}
 }

@@ -206,6 +206,7 @@ $api->users();
 $api->customFields($entity_type);
 $api->pipelines();
 $api->pipelineStatuses($pipeline_id);
+$api->lossReasons();
 $api->leads();
 $api->contacts();
 $api->companies();
@@ -502,6 +503,17 @@ $notes = $lead->getNotes($filter = [])->fetchAll();
 $note = $lead->findTask($task_id);
 $note = $lead->createNote($type = 'common');
 
+```
+
+#### Причины отказа сделок
+```php
+// через новый sugar-метод Leads сервиса
+$lossReasons = $api->leads()->lossReasons()->get();
+$lossReason = $api->leads()->lossReasons()->find($loss_reason_id);
+
+// или напрямую через отдельный сервис
+$lossReasons = $api->lossReasons()->get();
+$lossReason = $api->lossReasons()->find($loss_reason_id);
 ```
 
 #### Виджеты

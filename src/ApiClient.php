@@ -18,6 +18,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Account account(...$args)
  * @method \Ufee\AmoV4\Services\Users users(...$args)
  * @method \Ufee\AmoV4\Services\Pipelines pipelines(...$args)
+ * @method \Ufee\AmoV4\Services\LossReasons lossReasons(...$args)
  * @method \Ufee\AmoV4\Services\PipelineStatuses pipelineStatuses(...$args)
  * @method \Ufee\AmoV4\Services\CustomFields customFields(...$args)
  * @method \Ufee\AmoV4\Services\Leads leads(...$args)
@@ -37,6 +38,7 @@ class ApiClient
 		'account',
 		'users',
 		'pipelines',
+		'lossReasons',
 		'pipelineStatuses',
 		'customFields',
 		'leads',
