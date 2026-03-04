@@ -91,6 +91,7 @@ $api->cache->setTtl([
     'userGroups'   => 60, // 3600
     'customFields' => 60, // 1800
     'taskTypes'    => 60, // 3600
+    'lossReasons'  => 60, // 3600
     'eventTypes'   => 60  // 86400
 ]);
 ```
@@ -514,6 +515,13 @@ $lossReason = $api->leads()->lossReasons()->find($loss_reason_id);
 // или напрямую через отдельный сервис
 $lossReasons = $api->lossReasons()->get();
 $lossReason = $api->lossReasons()->find($loss_reason_id);
+
+// или из кеша
+$lossReasons = $this->crm->cache->lossReasons();
+$lossReason = $this->crm->cache->lossReason($loss_reason_id);
+
+// очистка кеша
+$this->crm->cache->clear('lossReasons');
 ```
 
 #### Виджеты

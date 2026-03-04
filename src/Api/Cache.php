@@ -26,6 +26,7 @@ class Cache
 		'userGroups'   => 3600,
 		'customFields' => 1800,
 		'taskTypes'    => 3600,
+		'lossReasons'  => 3600,
 		'eventTypes'   => 86400
 	];
 
@@ -181,6 +182,33 @@ class Cache
 			$this->storage->set($key, $models, $ttl);
 		}
 		return $models;
+	}
+	
+    /**
+     * Get cached loss reasons
+	 * @param array $with
+	 * @return Collections\LossReasons
+     */
+	public function lossReasons()
+	{
+		$key = 'lossReasons';
+		$ttl = $this->ttl['lossReasons'];
+		
+		if (!$models = $this->storage->get($key)) {
+			$models = $this->instance->leads()->lossReasons()->get();
+			$this->storage->set($key, $models, $ttl);
+		}
+		return $models;
+	}
+	
+    /**
+     * Get cached loss reason
+	 * @param int $reason_id
+	 * @return Models\LossReason|null
+     */
+	public function lossReason(int $reason_id)
+	{
+		return $this->lossReasons()->where('id', $reason_id)->first();
 	}
 	
 	/**
