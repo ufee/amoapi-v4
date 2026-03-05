@@ -219,6 +219,7 @@ $api->widgets();
 $api->webhooks();
 $api->bots();
 $api->sources();
+$api->subscriptions($entity_type, $entity_id); // entity_type: leads|customers
 ```
 Установка параметров
 ```php
@@ -661,4 +662,21 @@ $is_deleted = $api->sources()->remove($source_id); // один
 $is_deleted_batch = $api->sources()->remove([123, 456]); // пакетно
 // или через модель
 $is_deleted = $source->delete();
+```
+
+#### Подписчики сущности (Subscriptions API)
+```php
+// список подписчиков сделки
+$subscriptions = $api->subscriptions('leads', $lead_id)->get();
+
+foreach ($subscriptions as $subscription) {
+    echo $subscription->subscriber_id . ' (' . $subscription->type . ')' . PHP_EOL;
+}
+
+// список подписчиков покупателя
+$customer_subscriptions = $api->subscriptions('customers', $customer_id)->get();
+
+// sugar-метод через модель сделки
+$lead = $api->leads()->find($lead_id);
+$lead_subscriptions = $lead->getSubscriptions();
 ```
