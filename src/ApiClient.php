@@ -31,6 +31,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Widgets widgets(...$args)
  * @method \Ufee\AmoV4\Services\Webhooks webhooks(...$args)
  * @method \Ufee\AmoV4\Services\Bots bots(...$args)
+ * @method \Ufee\AmoV4\Services\Sources sources(...$args)
  */
 class ApiClient
 {
@@ -50,7 +51,8 @@ class ApiClient
 		'events',
 		'widgets',
 		'webhooks',
-		'bots'
+		'bots',
+		'sources'
 	];
 	protected $_params = [
 		'crm_host' => '',
