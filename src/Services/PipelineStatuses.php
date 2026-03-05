@@ -12,6 +12,7 @@ class PipelineStatuses extends Service
 	
 	protected $entity_model = '\Ufee\AmoV4\Models\PipelineStatus';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\PipelineStatuses';
+	protected $cache_keys = ['pipelines'];
 	
     /**
      * Constructor
@@ -37,6 +38,12 @@ class PipelineStatuses extends Service
 	{
 		$query = $this->instance->query('DELETE', $this->api_path.'/'.$status_id);
 		$query->execute();
-		return $query->response->getCode() === 204;
+		if ($query->response->getCode() === 204) {
+			foreach($this->cache_keys as $cache_key) {
+				$this->instance->cache->clear($cache_key);
+			}
+			return true;
+		}
+		return false;
 	}
 }

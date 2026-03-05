@@ -33,6 +33,7 @@ class Service
 	protected $query_args = [
 		'limit' => 250
 	];
+	protected $cache_keys = [];
 		
     /**
      * Constructor
@@ -190,17 +191,19 @@ class Service
 			// add one entity
 			$query->setJsonData([$data]);
 			$query->execute();
-
 			$rows = $query->response->validatedCreatedEntities($this->entity_key);
-			return current($rows);
+			$result = current($rows);
 		}
 		else if (is_array($data)) {
 			// add many entities
 			$query->setJsonData($data);
 			$query->execute();
-
-			return $query->response->validatedCreatedEntities($this->entity_key);
+			$result = $query->response->validatedCreatedEntities($this->entity_key);
 		}
+		foreach($this->cache_keys as $cache_key) {
+			$this->instance->cache->clear($cache_key);
+		}
+		return $result;
 	}
 	
     /**
@@ -216,8 +219,7 @@ class Service
 			$query = $this->instance->query('PATCH', $this->api_path.'/'.$elem_id);
 			$query->setJsonData($data);
 			$query->execute();
-
-			return $query->response->validatedUpdatedEntity($elem_id);
+			$result = $query->response->validatedUpdatedEntity($elem_id);
 		}
 		else if (is_array($elem_id)) {
 			// add many entities
@@ -225,9 +227,12 @@ class Service
 			$data = $elem_id;
 			$query->setJsonData($data);
 			$query->execute();
-
-			return $query->response->validatedUpdatedEntities($this->entity_key);
+			$result = $query->response->validatedUpdatedEntities($this->entity_key);
 		}
+		foreach($this->cache_keys as $cache_key) {
+			$this->instance->cache->clear($cache_key);
+		}
+		return $result;
 	}
 	
 	/**

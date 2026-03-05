@@ -11,6 +11,7 @@ class Sources extends Service
 	
 	protected $entity_model = '\Ufee\AmoV4\Models\Source';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\Sources';
+	protected $cache_keys = ['sources'];
 	
     /**
      * Delete source by id or batch
@@ -37,6 +38,12 @@ class Sources extends Service
 		$query = $this->instance->query('DELETE', $this->api_path);
 		$query->setJsonData($payload);
 		$query->execute();
-		return $query->response->getCode() === 204;
+		if ($query->response->getCode() === 204) {
+			foreach($this->cache_keys as $cache_key) {
+				$this->instance->cache->clear($cache_key);
+			}
+			return true;
+		}
+		return false;
 	}
 }

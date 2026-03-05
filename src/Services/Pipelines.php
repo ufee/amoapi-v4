@@ -11,7 +11,7 @@ class Pipelines extends Service
 	
 	protected $entity_model = '\Ufee\AmoV4\Models\Pipeline';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\Pipelines';
-	
+	protected $cache_keys = ['pipelines'];
 	
     /**
      * Delete pipeline
@@ -22,6 +22,12 @@ class Pipelines extends Service
 	{
 		$query = $this->instance->query('DELETE', $this->api_path.'/'.$pipeline_id);
 		$query->execute();
-		return $query->response->getCode() === 204;
+		if ($query->response->getCode() === 204) {
+			foreach($this->cache_keys as $cache_key) {
+				$this->instance->cache->clear($cache_key);
+			}
+			return true;
+		}
+		return false;
 	}
 }

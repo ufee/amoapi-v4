@@ -23,6 +23,7 @@ class Cache
 		'account'      => 3600,
 		'users'        => 1800,
 		'pipelines'    => 3600,
+		'sources'      => 3600,
 		'userGroups'   => 3600,
 		'customFields' => 1800,
 		'taskTypes'    => 3600,
@@ -186,7 +187,6 @@ class Cache
 	
     /**
      * Get cached loss reasons
-	 * @param array $with
 	 * @return Collections\LossReasons
      */
 	public function lossReasons()
@@ -209,6 +209,32 @@ class Cache
 	public function lossReason(int $reason_id)
 	{
 		return $this->lossReasons()->where('id', $reason_id)->first();
+	}
+	
+    /**
+     * Get cached sources
+	 * @return Collections\Sources
+     */
+	public function sources()
+	{
+		$key = 'sources';
+		$ttl = $this->ttl['sources'];
+		
+		if (!$models = $this->storage->get($key)) {
+			$models = $this->instance->sources()->get();
+			$this->storage->set($key, $models, $ttl);
+		}
+		return $models;
+	}
+	
+    /**
+     * Get cached source
+	 * @param int $source_id
+	 * @return Models\Source|null
+     */
+	public function source(int $source_id)
+	{
+		return $this->sources()->where('id', $source_id)->first();
 	}
 	
 	/**

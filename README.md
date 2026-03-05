@@ -88,6 +88,7 @@ $api->cache->setTtl([
     'account'      => 60, // 3600
     'users'        => 60, // 1800
     'pipelines'    => 60, // 3600
+    'sources'      => 60, // 3600
     'userGroups'   => 60, // 3600
     'customFields' => 60, // 1800
     'taskTypes'    => 60, // 3600
@@ -382,23 +383,26 @@ $pipeline->is_unsorted_on = false;
 $pipeline->_embedded = [];
 $pipeline->save();
 
-// этапы воронки
-$statuses = $pipeline->statuses(); // collection
 // удаление воронки
 $pipeline->delete();
 ```
 #### Этапы воронок
 ```php
+$statuses = $pipeline->statuses(); // collection
 $statuses = $api->pipelineStatuses($pipeline_id)->with(['descriptions'])->get();
 $status = $api->pipelineStatuses($pipeline_id)->find($status_id, ['descriptions']);
-// или новый этап
-$status = $api->pipelineStatuses($pipeline_id)->create(['name' => 'Договор подписан']);
 
+// или новый этап
+$status = $api->pipelineStatuses($pipeline_id)->create(['name' => 'Договор подписан','sort' => 10]);
+$status = $pipeline->createStatus(['name' => 'Договор подписан','sort' => 10]);
+
+// обновление этапа
 $status->sort = 50;
 $status->save();
 
 // удаление этапа
 $status->delete();
+$pipeline->deleteStatus($status_id);
 ```
 #### Кастомные поля аккаунта
 ```php
@@ -619,9 +623,11 @@ $is_stopped = $api->bots()->stop(
 ```php
 // список источников интеграции
 $sources = $api->sources()->get();
+$sources = $api->cache->sources(); // из кеша
 
-// поиск по id
+// получение по id
 $source = $api->sources()->find($source_id);
+$source = $api->cache->source($source_id); // из кеша
 
 // фильтр по внешнему коду
 $filtered = $api->sources()->filter([
@@ -676,7 +682,7 @@ foreach ($subscriptions as $subscription) {
 // список подписчиков покупателя
 $customer_subscriptions = $api->subscriptions('customers', $customer_id)->get();
 
-// sugar-метод через модель сделки
+// получение через модель сделки
 $lead = $api->leads()->find($lead_id);
-$lead_subscriptions = $lead->getSubscriptions();
+$subscriptions = $lead->getSubscriptions();
 ```
