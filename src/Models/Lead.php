@@ -10,6 +10,7 @@ class Lead extends WithCfield
 	use Traits\Tags;
 	use Traits\Tasks;
 	use Traits\Notes;
+	use Traits\Subscriptions;
 	use Traits\Links;
 	use Traits\LinkedContacts;
 	use Traits\LinkedCompanies;
