@@ -70,9 +70,7 @@ class EntityField
     {
 		$this->data->values = [];
 		foreach($values as $value) {
-			$this->data->values[]= [
-				(object)['value' => $value]
-			];
+			$this->data->values[]= (object)['value' => $value];
 		}
 		$this->model->cfChanged($this->data->field_id);
 		return $this;
