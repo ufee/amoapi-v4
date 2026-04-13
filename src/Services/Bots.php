@@ -7,12 +7,31 @@ namespace Ufee\AmoV4\Services;
 class Bots extends Service
 {
 	protected $api_path = '/api/v4/bots';
+	protected $entity_key = 'items';
+
+	protected $entity_model = '\Ufee\AmoV4\Models\Bot';
+	protected $entity_collection = '\Ufee\AmoV4\Collections\Bots';
 
 	/** @var array */
 	protected $allowed_run_entity_types = ['leads', 'contacts', 'customers'];
 
 	/** @var array */
 	protected $allowed_stop_entity_types = ['leads', 'customers'];
+
+	/**
+	 * Find bot by id
+	 * @param int $bot_id
+	 * @param array $with
+	 * @return \Ufee\AmoV4\Models\Bot|null
+	 */
+	public function find($bot_id, $with = [])
+	{
+		if (!is_int($bot_id) || $bot_id <= 0) {
+			throw new \InvalidArgumentException('Bot ID must be positive integer');
+		}
+		$result = $this->filter(['id' => [$bot_id]], $with)->fetchAll()->first();
+		return $result ?: null;
+	}
 
 	/**
 	 * Run bot tasks queue
