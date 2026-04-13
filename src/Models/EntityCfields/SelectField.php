@@ -6,5 +6,11 @@ namespace Ufee\AmoV4\Models\EntityCfields;
 
 class SelectField extends EntityField
 {
-    
+    public function getRawData()
+    {
+		return (object)[
+			'field_id' => $this->data->field_id,
+			'values' => $this->data->values ?: null
+		];
+	}
 }
