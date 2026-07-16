@@ -77,6 +77,18 @@ class EntityField
 	}
 	
     /**
+     * Get cf enum
+	 * @return integer|null
+     */
+    public function getEnum()
+    {
+		if (!isset($this->data->values[0])) {
+			return null;
+        }
+		return $this->data->values[0]->enum_id;
+    }
+	
+    /**
      * Set cf enum
 	 * @param int $enum_id
 	 * @return EntityField
@@ -89,6 +101,19 @@ class EntityField
 		$this->model->cfChanged($this->data->field_id);
 		return $this;
 	}
+	
+    /**
+     * Get cf enums
+	 * @return array
+     */
+    public function getEnums()
+    {
+        $enums = [];
+		foreach ($this->data->values as $setted) {
+            $enums[]= $setted->enum_id;
+        }
+        return $enums;
+    }
 	
     /**
      * Set cf enums
