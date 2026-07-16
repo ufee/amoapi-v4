@@ -20,18 +20,17 @@ class MongoDbStorage extends AbstractStorage
 			throw new \Exception('MongoDB Storage options[collection] must be instance of \MongoDB\Collection');
 		}
 	}
-
+	
 	/**
-	 * Init oauth handler
-	 * @return void
+	 * Get oauth data forced
+	 * @return array|bool
 	 */
-	public function initialize()
+	public function getRaw()
 	{
-		parent::initialize();
-
 		if ($row = $this->options['collection']->findOne(['_id' => $this->key])) {
-			static::$_local[$this->key] = (array) $row->data;
+			return (array) $row->data;
 		}
+		return false;
 	}
 
 	/**

@@ -40,6 +40,7 @@ class AbstractStorage
 			'refresh_token' => '',
 			'created_at' => 0
 		];
+		$this->reload();
 	}
 
 	/**
@@ -56,6 +57,27 @@ class AbstractStorage
 			return static::$_local[$this->key][$field];
 		}
 		return static::$_local[$this->key];
+	}
+	
+	/**
+	 * Reload oauth data
+	 * @return void
+	 */
+	public function reload()
+	{
+		$data = $this->getRaw();
+		if (is_array($data) && !empty($data)) {
+			static::$_local[$this->key] = $data;
+		}
+	}
+	
+	/**
+	 * Get oauth data forced
+	 * @return array|bool
+	 */
+	public function getRaw()
+	{
+		return static::$_local[$this->key] ?? false;
 	}
 	
 	/**

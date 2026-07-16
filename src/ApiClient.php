@@ -6,7 +6,7 @@
 namespace Ufee\AmoV4;
 
 if (!defined('AMOV4API_ROOT')) {
-	define('AMOV4API_ROOT',  __DIR__);
+	define('AMOV4API_ROOT', __DIR__);
 }
 /**
  * @property \Ufee\AmoV4\Api\Queries $queries
@@ -68,7 +68,7 @@ class ApiClient
 		'user_agent' => 'Amoapi v4'
 	];
 	protected $_integration = [];
-	
+
 	protected static $_cache = [];
 	protected static $_oauth = [];
 	protected static $_queries = [];
@@ -84,12 +84,12 @@ class ApiClient
 		$this->_integration = $account;
 		$this->_params['crm_host'] = $account['zone'] == 'com' ? $account['domain'] . '.kommo.com' : $account['domain'] . '.amocrm.ru';
 	}
-	
+
 	/**
 	 * Get api query
 	 * @param string $method
 	 * @param string $url
-	 * @return Query
+	 * @return Api\Query
 	 */
 	public function query(string $method = 'GET', string $url = '')
 	{
@@ -112,7 +112,7 @@ class ApiClient
 		$this->_params[$key] = $value;
 		return $this;
 	}
-	
+
 	/**
 	 * Get param value
 	 * @param string|null $key
@@ -140,7 +140,7 @@ class ApiClient
 		}
 		return $this;
 	}
-	
+
 	/**
 	 * Get integration data
 	 * @param string|null $key
@@ -214,7 +214,7 @@ class ApiClient
 	/**
 	 * Remove client isset
 	 * @param string $client_id
-	 * @return ApiClient
+	 * @return void
 	 */
 	public static function removeInstance($client_id)
 	{
@@ -246,20 +246,15 @@ class ApiClient
 	{
 		if ($target === 'queries') {
 			return static::$_queries[$this->getIntegration('id')];
-		}
-		else if ($target === 'callbacks') {
+		} else if ($target === 'callbacks') {
 			return static::$_callbacks[$this->getIntegration('id')];
-		}
-		else if ($target === 'oauth') {
+		} else if ($target === 'oauth') {
 			return static::$_oauth[$this->getIntegration('id')];
-		}
-		else if ($target === 'cache') {
+		} else if ($target === 'cache') {
 			return static::$_cache[$this->getIntegration('id')];
-		}
-		else if ($target === 'client_id') {
+		} else if ($target === 'client_id') {
 			return $this->getIntegration('client_id');
-		}
-		else if (in_array($target, $this->services)) {
+		} else if (in_array($target, $this->services)) {
 			$service_class = '\\Ufee\\AmoV4\\Services\\' . ucfirst($target);
 			return (new $service_class($this))->get();
 		}

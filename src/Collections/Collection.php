@@ -57,14 +57,14 @@ class Collection implements \IteratorAggregate
 		);
 	}
 
-    /**
-     * Push new elements
+	/**
+	 * Push new elements
 	 * @param mixed $element
 	 * @param mixed $key
-	 * @return Colection
-     */
-    public function push($element, $key = null)
-    {
+	 * @return Collection
+	 */
+	public function push($element, $key = null)
+	{
 		if (!is_null($key)) {
 			$this->items[$key] = $element;
 		} else {
@@ -320,7 +320,7 @@ class Collection implements \IteratorAggregate
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Get elements where value
 	 * @param mixed $a items element value || key
@@ -467,16 +467,16 @@ class Collection implements \IteratorAggregate
 	}
 
 	/**
-     * Get array data with values by field
+	 * Get array data with values by field
 	 * @return string $field
 	 * @return static
-     */
-    public function fieldValues(string $field)
-    {
+	 */
+	public function fieldValues(string $field)
+	{
 		$items = [];
 		$type = is_object($this->first()) ? 'obj' : 'arr';
-		$this->each(function($item, $key) use(&$items, $field, $type) {
-			$items[$key]= $type == 'obj' ? $item->{$field} : $item[$field];
+		$this->each(function ($item, $key) use (&$items, $field, $type) {
+			$items[$key] = $type == 'obj' ? $item->{$field} : $item[$field];
 		});
 		return new static($items);
 	}

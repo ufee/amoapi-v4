@@ -20,21 +20,17 @@ class FileStorage extends AbstractStorage
 			throw new \InvalidArgumentException('File Storage options[path] must be string path');
 		}
 	}
-
+	
 	/**
-	 * Init oauth handler
-	 * @return void
+	 * Get oauth data forced
+	 * @return array|bool
 	 */
-	public function initialize()
+	public function getRaw()
 	{
-		parent::initialize();
-
-		if (!file_exists($this->options['path'] . '/' . $this->domain)) {
-			mkdir($this->options['path'] . '/' . $this->domain, 0777, true);
-		}
 		if (file_exists($this->options['path'] . '/' . $this->domain . '/' . $this->client_id . '.json')) {
-			static::$_local[$this->key] = json_decode(file_get_contents($this->options['path'] . '/' . $this->domain . '/' . $this->client_id . '.json'), true);
+			return json_decode(file_get_contents($this->options['path'] . '/' . $this->domain . '/' . $this->client_id . '.json'), true);
 		}
+		return false;
 	}
 
 	/**

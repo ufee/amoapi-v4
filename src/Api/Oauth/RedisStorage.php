@@ -22,18 +22,17 @@ class RedisStorage extends AbstractStorage
 			throw new \InvalidArgumentException('Redis Storage options[connection] must be instance of \Redis');
 		}
 	}
-
+	
 	/**
-	 * Init oauth handler
-	 * @return void
+	 * Get oauth data forced
+	 * @return array|bool
 	 */
-	public function initialize()
+	public function getRaw()
 	{
-		parent::initialize();
-
 		if ($data = $this->options['connection']->get($this->key)) {
-			static::$_local[$this->key] = $data;
+			return $data;
 		}
+		return false;
 	}
 
 	/**
