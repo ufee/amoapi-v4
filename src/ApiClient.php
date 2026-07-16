@@ -24,6 +24,8 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Leads leads(...$args)
  * @method \Ufee\AmoV4\Services\Contacts contacts(...$args)
  * @method \Ufee\AmoV4\Services\Companies companies(...$args)
+ * @method \Ufee\AmoV4\Services\Customers customers(...$args)
+ * @method \Ufee\AmoV4\Services\CustomerSegments customerSegments(...$args)
  * @method \Ufee\AmoV4\Services\Links links(...$args)
  * @method \Ufee\AmoV4\Services\Tasks tasks(...$args)
  * @method \Ufee\AmoV4\Services\Notes notes(...$args)
@@ -46,6 +48,8 @@ class ApiClient
 		'leads',
 		'contacts',
 		'companies',
+		'customers',
+		'customerSegments',
 		'links',
 		'tasks',
 		'notes',
