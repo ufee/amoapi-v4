@@ -186,6 +186,21 @@ $api->callbacks->on('oauth.token.refresh', function($oauth, $query, $response) {
 $api->callbacks->on('oauth.token.refresh.error', function($exc, $query = null, $response = null) {
     // вызывается после неудачного обновления токена
 });
+
+// refresh token race condition solution
+$redis = new \Redis();
+$redis->connect('127.0.0.1');
+$redis->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_NONE);
+
+$this->crm->callbacks->on('oauth.token.refresh.lock', function($domain, $client_id) use ($redis) {
+    // необходимо вернуть true в случае успешной блокировки, иначе false
+    return $redis->set('lock:'.$domain.':'.$client_id, 1, ['nx', 'ex' => 30]);
+});
+
+$this->crm->callbacks->on('oauth.token.refresh.unlock', function($domain, $client_id) use ($redis) {
+    // снять блокировку
+    $redis->del('lock:'.$domain.':'.$client_id);
+});
 ```
 ### 🔐 Первичное получение OAuth-токена
 ```php
@@ -447,6 +462,9 @@ $cf = $lead->cf(3745829);
 $cf->setValue('Москва');
 $cf->setEnum(546710);
 $value = $cf->getValue();
+
+$enum_id = $cf->getEnum(); // select
+$enum_ids = $cf->getEnums(); // multiselect
 
 $field = $cf->field;
 $enum_values = $field->getEnums();
