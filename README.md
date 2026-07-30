@@ -88,6 +88,7 @@ $api->cache->setTtl([
     'account'      => 60, // 3600
     'users'        => 60, // 1800
     'pipelines'    => 60, // 3600
+    'catalogs'     => 60, // 3600
     'sources'      => 60, // 3600
     'userGroups'   => 60, // 3600
     'customFields' => 60, // 1800
@@ -224,6 +225,8 @@ $api->customFields($entity_type);
 $api->pipelines();
 $api->pipelineStatuses($pipeline_id);
 $api->lossReasons();
+$api->catalogs();
+$api->catalogElements($catalog_id);
 $api->leads();
 $api->contacts();
 $api->companies();
@@ -418,6 +421,54 @@ $status->save();
 // удаление этапа
 $status->delete();
 $pipeline->deleteStatus($status_id);
+```
+#### Списки (Catalogs API)
+```php
+$catalogs = $api->catalogs()->get();
+$catalog = $api->catalogs()->find($catalog_id);
+// или из кеша
+$catalogs = $api->cache->catalogs();
+$catalog = $api->cache->catalog($catalog_id);
+
+// создание списка
+$catalog = $api->catalogs()->create(['name' => 'Договоры']);
+$catalog->type = \Ufee\AmoV4\Services\Catalogs::TYPE_REGULAR; // regular|invoices|products
+$catalog->can_add_elements = true;
+$catalog->can_link_multiple = false;
+$catalog->save();
+// системный список Catalogs::TYPE_SUPPLIERS ('suppliers') создается аккаунтом вместе со счетами,
+// он доступен только на чтение и не может быть создан через API
+
+// обновление списка
+$catalog->name = 'Новое имя списка';
+$catalog->save();
+
+// очистка кеша
+$api->cache->clear('catalogs');
+```
+#### Элементы списков
+```php
+$elements = $api->catalogElements($catalog_id)->get();
+// или через модель списка
+$elements = $catalog->elements()->get();
+
+$paginate = $catalog->elements()->paginate();
+$paginate = $catalog->elements()->filter(['id' => [525439, 525440]]);
+$elements = $catalog->elements()->searchByName('Телефон', 1);
+
+$element = $catalog->elements()->find($element_id);
+// элемент списка счетов со ссылкой на печатную форму
+$element = $catalog->elements()->find($element_id, ['invoice_link']);
+
+// создание элемента
+$element = $catalog->createElement(['name' => 'Телефон']);
+$element->cf('Артикул')->setValue('34N4124');
+$element->save();
+
+// поля списка
+$cfields = $catalog->customFields()->get();
+// или из кеша
+$cfields = $api->cache->customFields('catalogs', $catalog_id);
 ```
 #### Кастомные поля аккаунта
 ```php

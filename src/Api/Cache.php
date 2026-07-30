@@ -23,6 +23,7 @@ class Cache
 		'account' => 3600,
 		'users' => 1800,
 		'pipelines' => 3600,
+		'catalogs' => 3600,
 		'sources' => 3600,
 		'userGroups' => 3600,
 		'customFields' => 1800,
@@ -209,6 +210,32 @@ class Cache
 	public function lossReason(int $reason_id)
 	{
 		return $this->lossReasons()->where('id', $reason_id)->first();
+	}
+
+	/**
+	 * Get cached Catalogs
+	 * @return Collections\Catalogs
+	 */
+	public function catalogs()
+	{
+		$key = 'catalogs';
+		$ttl = $this->ttl['catalogs'];
+
+		if (!$models = $this->storage->get($key)) {
+			$models = $this->instance->catalogs()->get();
+			$this->storage->set($key, $models, $ttl);
+		}
+		return $models;
+	}
+
+	/**
+	 * Get cached Catalog
+	 * @param int $catalog_id
+	 * @return Models\Catalog|null
+	 */
+	public function catalog(int $catalog_id)
+	{
+		return $this->catalogs()->where('id', $catalog_id)->first();
 	}
 
 	/**
