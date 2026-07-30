@@ -10,13 +10,13 @@ use Ufee\AmoV4\Api\Paginate;
 
 /**
  * Base service for amoCRM entities
- * 
+ *
  * This class is designed to be extended. Subclasses must override:
  * - $api_path (e.g. '/api/v4/leads')
  * - $entity_key (e.g. 'leads')
  * - $entity_model (e.g. Lead::class)
  * - $entity_collection (e.g. leads::class)
- * 
+ *
  * @property ApiClient $instance
  */
 class Service

@@ -13,4 +13,5 @@ class Company extends WithCfield
 	use Traits\Links;
 	use Traits\LinkedLeads;
 	use Traits\LinkedContacts;
+	use Traits\ResponsibleUser;
 }

@@ -12,9 +12,26 @@ class Companies extends Service
 	use Traits\SearchByPhone;
 	use Traits\Cfields;
 	use Traits\Notes;
-	
+
 	const PHONE_RU_MOB = 'ru_mob';
-	
+
+	/**
+	 * Добавляет в ответ связанные с компанией элементы списков
+	 */
+	public const CATALOG_ELEMENTS = 'catalog_elements';
+	/**
+	 * Добавляет в ответ связанные с компанией сделки
+	 */
+	public const LEADS = 'leads';
+	/**
+	 * Добавляет в ответ связанных с компанией покупателей
+	 */
+	public const CUSTOMERS = 'customers';
+	/**
+	 * Добавляет в ответ связанные с компанией контакты
+	 */
+	public const CONTACTS = 'contacts';
+
 	protected $api_path = '/api/v4/companies';
 	protected $entity_key = 'companies';
 

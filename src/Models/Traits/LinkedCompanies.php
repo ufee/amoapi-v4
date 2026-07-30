@@ -17,7 +17,7 @@ trait LinkedCompanies
 	{
 		return $this->attachEntity($entity, 'companies');
 	}
-	
+
     /**
      * Delete entity link
 	 * @param integer|Company $entity - id or model
@@ -29,16 +29,33 @@ trait LinkedCompanies
 	}
 
     /**
+     * Has linked company
+	 * @return bool
+     */
+    public function hasCompany()
+    {
+		return !empty($this->embedded['companies'][0]->id);
+	}
+
+    /**
+     * Get first linked company id
+	 * @return int|null
+     */
+    public function getCompanyId()
+    {
+		return $this->embedded['companies'][0]->id ?? null;
+	}
+
+    /**
      * Get linked companies
 	 * @return Company|bool
      */
-    public function company()
+    public function company(array $with = [])
     {
-		//return $this->links()->get(['to_entity_type' => 'companies'])->company();
-		$company_id = $this->embedded['companies'][0]->id ?? null;
+		$company_id = $this->getCompanyId();
 		if (!$company_id) {
 			return false;
 		}
-		return $this->service->instance->companies()->find($company_id);
+		return $this->service->instance->companies()->find($company_id, $with);
 	}
 }

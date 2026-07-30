@@ -3,9 +3,12 @@
  * amoCRM Task model
  */
 namespace Ufee\AmoV4\Models;
+use Ufee\AmoV4\Models\Traits;
 
 class Task extends Model
 {
+	use Traits\ResponsibleUser;
+
 	protected $required = [
 		'text', 'complete_till'
 	];

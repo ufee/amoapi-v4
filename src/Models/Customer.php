@@ -13,6 +13,8 @@ class Customer extends WithCfield
 	use Traits\Links;
 	use Traits\LinkedContacts;
 	use Traits\LinkedCompanies;
+	use Traits\ResponsibleUser;
+	use Traits\MainContact;
 
 	public function setSegments(array $segments)
     {
