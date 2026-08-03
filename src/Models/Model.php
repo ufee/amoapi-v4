@@ -177,6 +177,16 @@ class Model
 	}
 
 	/**
+	 * Has model field value, keeps isset()/empty() consistent with __get()
+	 * @param string $field
+	 * @return bool
+	 */
+	public function __isset(string $field)
+	{
+		return !is_null($this->__get($field));
+	}
+
+	/**
 	 * Protect set model fields
 	 * @param string $field
 	 * @param mixed $value
