@@ -135,15 +135,19 @@ class Oauth
 		}
 		if ($instance->callbacks->has('oauth.token.refresh.lock')) {
 			$i = 0;
+			$lock_usleep = (int) ($instance->getParam('oauth_lock_usleep') ?? 500000);
+			$lock_retries = (int) ($instance->getParam('oauth_lock_retries') ?? 60);
 			while (!$instance->callbacks->trigger('oauth.token.refresh.lock', $domain, $client_id)) {
 				$i++;
-				usleep(500000); // 0.5 sec
+				if ($lock_usleep > 0) {
+					usleep($lock_usleep); // default 0.5 sec
+				}
 				$oauth = $this->storage->getRaw();
 				if ($oauth && ($oauth['created_at'] + $oauth['expires_in'] > time() + 60)) {
 					$this->storage->set($oauth);
 					return $oauth;
 				}
-				if ($i === 60) {
+				if ($i === $lock_retries) {
 					throw new Exceptions\OauthException('OAuth refresh lock timeout, parallel process is hanging');
 				}
 			}

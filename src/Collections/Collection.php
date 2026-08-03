@@ -344,9 +344,6 @@ class Collection implements \IteratorAggregate
 			return $this->_findCallable($a);
 		}
 		if (is_null($b)) {
-			if (is_callable($a)) {
-				return $this->_findCallable($a);
-			}
 			if (!is_array($a)) {
 				$a = [$a];
 			}
