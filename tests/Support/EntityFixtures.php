@@ -51,6 +51,14 @@ final class EntityFixtures
 				'model' => Models\Lead::class,
 				'collection' => Collections\Leads::class,
 			],
+			'unsorted' => [
+				'method' => 'unsorted',
+				'args' => [],
+				'api_path' => '/api/v4/leads/unsorted',
+				'entity_key' => 'unsorted',
+				'model' => Models\Unsorted::class,
+				'collection' => Collections\Unsorteds::class,
+			],
 			'customers' => [
 				'method' => 'customers',
 				'args' => [],
