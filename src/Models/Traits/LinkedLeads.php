@@ -29,7 +29,7 @@ trait LinkedLeads
 	{
 		return $this->attachEntities($entities, 'leads');
 	}
-	
+
     /**
      * Delete entity link
 	 * @param integer|Lead $entity - id or model
@@ -39,7 +39,7 @@ trait LinkedLeads
 	{
 		return $this->detachEntity($entity, 'leads');
 	}
-	
+
     /**
      * Delete entities links
 	 * @param array|Leads $entities - model collection or array of ids
@@ -49,13 +49,22 @@ trait LinkedLeads
 	{
 		return $this->detachEntities($entities, 'leads');
 	}
-	
+
+	/**
+	 * Check if entity has leads
+	 * @return bool
+	 */
+	public function hasLeads(): bool
+	{
+		return count($this->leads ?? []) > 0;
+	}
+
     /**
      * Get linked leads
 	 * @return Leads|bool
      */
-    public function leads()
+    public function leads(array $with = [])
     {
-		return $this->links()->get(['to_entity_type' => 'leads'])->leads();
+		return $this->links()->get(['to_entity_type' => 'leads'])->leads($with);
 	}
 }

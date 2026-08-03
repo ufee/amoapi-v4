@@ -455,7 +455,7 @@ class Collection implements \IteratorAggregate
 	}
 
 	/**
-	 * Slice collection 
+	 * Slice collection
 	 * @param integer $offset
 	 * @param integer $length
 	 * @return Collection

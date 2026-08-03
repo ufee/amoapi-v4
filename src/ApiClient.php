@@ -110,6 +110,18 @@ class ApiClient
 	}
 
 	/**
+	 * Get catalog element
+	 * @param int $catalog_id
+	 * @param int $element_id
+	 * @param array $with
+	 * @return Models\CatalogElement|null
+	 */
+	public function catalogElement(int $catalog_id, int $element_id, array $with = [])
+	{
+		return $this->catalogElements($catalog_id)->find($element_id, $with);
+	}
+
+	/**
 	 * Set param value
 	 * @param string $key
 	 * @param mixed $value

@@ -108,7 +108,7 @@ class EntityCustomFields
     {
 		if (!$cf = $this->collection->find($field, $val)->first()) {
 			$service = $this->model->service;
-			$accountCfs = $service->instance->cache->customFields($service->entity_key);
+			$accountCfs = $service->instance->cache->customFields(...$service->customFieldsArgs());
 			$field_key = str_replace('field_', '', $field);
 			
 			if ($acf = $accountCfs->find($field_key, $val)->first()) {

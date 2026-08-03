@@ -9,6 +9,13 @@ class CatalogElements extends Service
 {
 	use Traits\SearchByName;
 
+	/**
+	 * При передаче данного параметра, вернется дополнительное свойство invoice_link,
+	 * содержащие ссылку на печатную форму счета.
+	 * Если передать этот параметр с отличным от списка Счетов списком, то вернется null.
+	 */
+	public const INVOICE_LINK = 'invoice_link';
+
 	protected $api_path = '/api/v4/catalogs/{catalog_id}/elements';
 	protected $entity_key = 'elements';
 
@@ -34,11 +41,20 @@ class CatalogElements extends Service
 	}
 
 	/**
+	 * Args for custom fields API / cache
+	 * @return array
+	 */
+	public function customFieldsArgs(): array
+	{
+		return ['catalogs', $this->catalog_id];
+	}
+
+	/**
 	 * Get catalog Custom Fields service
 	 * @return CustomFields
 	 */
 	public function customFields()
 	{
-		return $this->instance->customFields('catalogs', $this->catalog_id);
+		return $this->instance->customFields(...$this->customFieldsArgs());
 	}
 }

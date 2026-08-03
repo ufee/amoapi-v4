@@ -457,8 +457,10 @@ $paginate = $catalog->elements()->filter(['id' => [525439, 525440]]);
 $elements = $catalog->elements()->searchByName('Телефон', 1);
 
 $element = $catalog->elements()->find($element_id);
+// или сразу по паре id
+$element = $api->catalogElement($catalog_id, $element_id);
 // элемент списка счетов со ссылкой на печатную форму
-$element = $catalog->elements()->find($element_id, ['invoice_link']);
+$element = $api->catalogElement($catalog_id, $element_id, ['invoice_link']);
 
 // создание элемента
 $element = $catalog->createElement(['name' => 'Телефон']);
@@ -469,6 +471,28 @@ $element->save();
 $cfields = $catalog->customFields()->get();
 // или из кеша
 $cfields = $api->cache->customFields('catalogs', $catalog_id);
+```
+#### Элементы списков в сделках и покупателях
+Доступно в моделях сделок и покупателей через трейт `LinkedCatalogElements`
+`catalog_id` определяется автоматически, если передана модель элемента
+```php
+$lead = $api->leads()->find($lead_id);
+
+// привязка элемента
+$link = $lead->attachCatalogElement($element);
+$link = $lead->attachCatalogElement($element_id, $catalog_id, $quantity = 3);
+
+// привязка нескольких элементов одного списка
+$links = $lead->attachCatalogElements($elements);
+$links = $lead->attachCatalogElements([525439, 525440], $catalog_id);
+
+// отвязка
+$lead->detachCatalogElement($element);
+$lead->detachCatalogElements([525439, 525440], $catalog_id);
+
+// привязанные элементы, коллекция или false
+$elements = $lead->catalogElements();
+$elements = $lead->catalogElements($catalog_id); // только из одного списка
 ```
 #### Кастомные поля аккаунта
 ```php

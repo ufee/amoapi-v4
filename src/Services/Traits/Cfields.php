@@ -13,6 +13,6 @@ trait Cfields
      */
 	public function customFields()
 	{
-		return $this->instance->customFields($this->entity_key);
+		return $this->instance->customFields(...$this->customFieldsArgs());
 	}
 }
