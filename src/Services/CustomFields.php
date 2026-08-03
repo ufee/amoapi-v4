@@ -16,13 +16,27 @@ class CustomFields extends Service
     /**
      * Constructor
 	 * @param ApiClient $client
-	 * @param array $args
+	 * @param array $args - entity type, for catalogs also catalog_id
      */
     public function __construct(ApiClient $client, array $args)
     {
         $this->client_id = $client->client_id;
-        $entity_key = join('/', $args);
-		$this->api_path = str_replace('{entity}', $entity_key, $this->api_path);
+
+		if (empty($args[0])) {
+			throw new \InvalidArgumentException('CustomFields Service required entity argument');
+		}
+
+		$entity = (string)$args[0];
+
+		if ($entity === 'catalogs') {
+			if (empty($args[1]) || !(int)$args[1]) {
+				throw new \InvalidArgumentException('CustomFields Service for catalogs required catalog_id argument');
+			}
+			$this->api_path = '/api/v4/catalogs/' . (int)$args[1] . '/custom_fields';
+		} else {
+			$this->api_path = str_replace('{entity}', $entity, $this->api_path);
+		}
+
 		$this->_boot();
 	}
 }

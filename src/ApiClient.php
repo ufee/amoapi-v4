@@ -26,6 +26,8 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Companies companies(...$args)
  * @method \Ufee\AmoV4\Services\Customers customers(...$args)
  * @method \Ufee\AmoV4\Services\CustomerSegments customerSegments(...$args)
+ * @method \Ufee\AmoV4\Services\Catalogs catalogs(...$args)
+ * @method \Ufee\AmoV4\Services\CatalogElements catalogElements(...$args)
  * @method \Ufee\AmoV4\Services\Links links(...$args)
  * @method \Ufee\AmoV4\Services\Tasks tasks(...$args)
  * @method \Ufee\AmoV4\Services\Notes notes(...$args)
@@ -50,6 +52,8 @@ class ApiClient
 		'companies',
 		'customers',
 		'customerSegments',
+		'catalogs',
+		'catalogElements',
 		'links',
 		'tasks',
 		'notes',
@@ -103,6 +107,18 @@ class ApiClient
 			$query->setUrl($url);
 		}
 		return $query;
+	}
+
+	/**
+	 * Get catalog element
+	 * @param int $catalog_id
+	 * @param int $element_id
+	 * @param array $with
+	 * @return Models\CatalogElement|null
+	 */
+	public function catalogElement(int $catalog_id, int $element_id, array $with = [])
+	{
+		return $this->catalogElements($catalog_id)->find($element_id, $with);
 	}
 
 	/**

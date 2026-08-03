@@ -14,6 +14,9 @@ class Lead extends WithCfield
 	use Traits\Links;
 	use Traits\LinkedContacts;
 	use Traits\LinkedCompanies;
+	use Traits\LinkedCatalogElements;
+	use Traits\ResponsibleUser;
+	use Traits\MainContact;
 
 	/**
      * Create linked contact model
@@ -27,7 +30,7 @@ class Lead extends WithCfield
 		$contact->attachLead($this);
 
 		if ($this->hasCompany()) {
-			$contact->attachCompany($this->company_id);
+			$contact->attachCompany($this->getCompanyId());
 		}
 		$contact->onCreate(function(&$model) use (&$lead) {
 			$lead->attachContact($model);
@@ -47,11 +50,29 @@ class Lead extends WithCfield
 		$company->attachLead($this);
 
 		if ($this->hasMainContact()) {
-			$company->attachContact($this->main_contact_id);
+			$company->attachContact($this->getMainContact());
 		}
 		$company->onCreate(function(&$model) use (&$lead) {
 			$lead->attachCompany($model);
 		});
 		return $company;
+	}
+
+	/**
+	 * Get pipeline
+	 * @return Pipeline
+	 */
+	public function pipeline(): Pipeline
+	{
+		return $this->service->instance->cache->pipeline($this->pipeline_id);
+	}
+
+	/**
+	 * Get status
+	 * @return PipelineStatus|null
+	 */
+	public function status(): ?PipelineStatus
+	{
+		return $this->pipeline()->statuses()->where('id', $this->status_id)->first();
 	}
 }

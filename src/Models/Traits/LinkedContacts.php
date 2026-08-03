@@ -29,7 +29,7 @@ trait LinkedContacts
 	{
 		return $this->attachEntities($entities, 'contacts');
 	}
-	
+
     /**
      * Delete entity link
 	 * @param integer|Contact $entity - id or model
@@ -39,7 +39,7 @@ trait LinkedContacts
 	{
 		return $this->detachEntity($entity, 'contacts');
 	}
-	
+
     /**
      * Delete entities links
 	 * @param array|Contacts $entities - model collection or array of ids
@@ -54,8 +54,8 @@ trait LinkedContacts
      * Get linked contacts
 	 * @return Contacts|bool
      */
-    public function contacts()
+    public function contacts(array $with = [])
     {
-		return $this->links()->get(['to_entity_type' => 'contacts'])->contacts();
+		return $this->links()->get(['to_entity_type' => 'contacts'])->contacts($with);
 	}
 }
