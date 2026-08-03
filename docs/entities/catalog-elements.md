@@ -1,34 +1,6 @@
-# Списки и элементы
+# Элементы списков
 
-[← README](../README.md)
-
-## Списки (Catalogs API)
-
-```php
-$catalogs = $api->catalogs()->get();
-$catalog = $api->catalogs()->find($catalog_id);
-// или из кеша
-$catalogs = $api->cache->catalogs();
-$catalog = $api->cache->catalog($catalog_id);
-
-// создание списка
-$catalog = $api->catalogs()->create(['name' => 'Договоры']);
-$catalog->type = \Ufee\AmoV4\Services\Catalogs::TYPE_REGULAR; // regular|invoices|products
-$catalog->can_add_elements = true;
-$catalog->can_link_multiple = false;
-$catalog->save();
-// системный список Catalogs::TYPE_SUPPLIERS ('suppliers') создается аккаунтом вместе со счетами,
-// он доступен только на чтение и не может быть создан через API
-
-// обновление списка
-$catalog->name = 'Новое имя списка';
-$catalog->save();
-
-// очистка кеша
-$api->cache->clear('catalogs');
-```
-
-## Элементы списков
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 $elements = $api->catalogElements($catalog_id)->get();
@@ -56,7 +28,7 @@ $cfields = $catalog->customFields()->get();
 $cfields = $api->cache->customFields('catalogs', $catalog_id);
 ```
 
-## Элементы списков в сделках и покупателях
+## Привязка к сделкам и покупателям
 
 Доступно в моделях сделок и покупателей через трейт `LinkedCatalogElements`.
 `catalog_id` определяется автоматически, если передана модель элемента.
@@ -80,3 +52,5 @@ $lead->detachCatalogElements([525439, 525440], $catalog_id);
 $elements = $lead->catalogElements();
 $elements = $lead->catalogElements($catalog_id); // только из одного списка
 ```
+
+См. также: [списки](catalogs.md), [сделки](leads.md), [покупатели](customers.md).

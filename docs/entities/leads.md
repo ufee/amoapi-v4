@@ -1,8 +1,6 @@
 # Сделки
 
-[← README](../README.md)
-
-## Сделки
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 $leads = $api->leads()->get();
@@ -44,27 +42,14 @@ $task = $lead->createTask($type = 1);
 
 $paginate = $lead->getNotes($filter = []);
 $notes = $lead->getNotes($filter = [])->fetchAll();
-$note = $lead->findTask($task_id);
+$note = $lead->findNote($note_id);
 $note = $lead->createNote($type = 'common');
+
+// связи
+$lead->attachContact($contact);
+$lead->attachCompany($company);
+$contact = $lead->createContact(['name' => 'Иван']);
+$company = $lead->createCompany(['name' => 'ООО Ромашка']);
 ```
 
-См. также: [элементы списков в сделках](catalogs.md#элементы-списков-в-сделках-и-покупателях).
-
-## Причины отказа сделок
-
-```php
-// через новый sugar-метод Leads сервиса
-$lossReasons = $api->leads()->lossReasons()->get();
-$lossReason = $api->leads()->lossReasons()->find($loss_reason_id);
-
-// или напрямую через отдельный сервис
-$lossReasons = $api->lossReasons()->get();
-$lossReason = $api->lossReasons()->find($loss_reason_id);
-
-// или из кеша
-$lossReasons = $this->crm->cache->lossReasons();
-$lossReason = $this->crm->cache->lossReason($loss_reason_id);
-
-// очистка кеша
-$this->crm->cache->clear('lossReasons');
-```
+См. также: [причины отказа](loss-reasons.md), [элементы списков](catalog-elements.md#привязка-к-сделкам-и-покупателям), [подписчики](subscriptions.md), [задачи](tasks.md), [заметки](notes.md).

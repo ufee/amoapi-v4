@@ -41,13 +41,30 @@ foreach ($leads as $lead) {
 | Раздел | Описание |
 |--------|----------|
 | [Конфигурация](docs/configuration.md) | Клиент, OAuth, кеш, callbacks, произвольные запросы |
-| [Сущности](docs/entities.md) | Сервисы, модели, коллекции, пагинация, фильтры, поиск |
-| [Аккаунт и воронки](docs/account.md) | Аккаунт, пользователи, воронки, этапы |
-| [Списки](docs/catalogs.md) | Catalogs API, элементы, привязка к сделкам |
-| [Кастомные поля](docs/custom-fields.md) | Поля аккаунта и сущности |
-| [Сделки](docs/leads.md) | Leads API, теги, задачи, заметки, причины отказа |
-| [Виджеты](docs/widgets.md) | Установка и удаление виджетов |
-| [Вебхуки](docs/webhooks.md) | Подписка и отписка |
-| [Bots](docs/bots.md) | Запуск и остановка ботов |
-| [Источники](docs/sources.md) | Sources API |
-| [Подписчики](docs/subscriptions.md) | Subscriptions API |
+| [Работа с сущностями](docs/entities.md) | Сервисы, модели, коллекции, пагинация, фильтры, поиск |
+
+### Сущности
+
+| Сущность | Файл |
+|----------|------|
+| [Аккаунт](docs/entities/account.md) | account |
+| [Пользователи](docs/entities/users.md) | users |
+| [Воронки и этапы](docs/entities/pipelines.md) | pipelines, statuses |
+| [Списки](docs/entities/catalogs.md) | catalogs |
+| [Элементы списков](docs/entities/catalog-elements.md) | catalogElements |
+| [Кастомные поля](docs/entities/custom-fields.md) | customFields |
+| [Сделки](docs/entities/leads.md) | leads |
+| [Контакты](docs/entities/contacts.md) | contacts |
+| [Компании](docs/entities/companies.md) | companies |
+| [Покупатели](docs/entities/customers.md) | customers |
+| [Сегменты](docs/entities/customer-segments.md) | customerSegments |
+| [Причины отказа](docs/entities/loss-reasons.md) | lossReasons |
+| [Задачи](docs/entities/tasks.md) | tasks |
+| [Заметки](docs/entities/notes.md) | notes |
+| [События](docs/entities/events.md) | events |
+| [Связи](docs/entities/links.md) | links |
+| [Виджеты](docs/entities/widgets.md) | widgets |
+| [Вебхуки](docs/entities/webhooks.md) | webhooks |
+| [Bots](docs/entities/bots.md) | bots |
+| [Источники](docs/entities/sources.md) | sources |
+| [Подписчики](docs/entities/subscriptions.md) | subscriptions |

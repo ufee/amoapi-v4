@@ -1,6 +1,6 @@
-# Подписчики сущности (Subscriptions API)
+# Подписчики (Subscriptions)
 
-[← README](../README.md)
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 // список подписчиков сделки
@@ -17,3 +17,5 @@ $customer_subscriptions = $api->subscriptions('customers', $customer_id)->get();
 $lead = $api->leads()->find($lead_id);
 $subscriptions = $lead->getSubscriptions();
 ```
+
+См. также: [сделки](leads.md), [покупатели](customers.md).

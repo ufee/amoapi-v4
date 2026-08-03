@@ -1,6 +1,6 @@
 # Bots
 
-[← README](../README.md)
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 // запуск Bot (до 100 задач за запрос)

@@ -2,6 +2,8 @@
 
 [← README](../README.md)
 
+Общие паттерны для всех сервисов. Документация по конкретным сущностям — в [entities/](entities/).
+
 Производится через сервисы:
 
 ```php
@@ -17,6 +19,8 @@ $api->catalogElements($catalog_id);
 $api->leads();
 $api->contacts();
 $api->companies();
+$api->customers();
+$api->customerSegments();
 $api->links();
 $api->tasks();
 $api->notes($entity_type);

@@ -1,6 +1,6 @@
-# Источники (Sources API)
+# Источники (Sources)
 
-[← README](../README.md)
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 // список источников интеграции

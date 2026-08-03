@@ -1,6 +1,6 @@
 # Виджеты
 
-[← README](../README.md)
+[← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
 $paginate = $api->widgets()->paginate();
