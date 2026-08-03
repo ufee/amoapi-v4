@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/Support/redis_stub.php';
+require __DIR__ . '/Support/mongodb_stub.php';
 
 /**
  * Загружает KEY=VALUE из .env, не перезаписывая уже заданные переменные окружения.
