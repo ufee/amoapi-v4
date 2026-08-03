@@ -18,6 +18,9 @@ class StubApiClient extends ApiClient
 	/** @var StubQuery|null */
 	public $lastQuery;
 
+	/** @var class-string<StubQuery> */
+	public $queryClass = StubQuery::class;
+
 	/**
 	 * Подменяет зарегистрированный ApiClient на stub с тем же client_id.
 	 */
@@ -53,7 +56,8 @@ class StubApiClient extends ApiClient
 
 	public function query(string $method = 'GET', string $url = '')
 	{
-		$query = new StubQuery($this);
+		$class = $this->queryClass;
+		$query = new $class($this);
 		$query->setMethod($method);
 		if ($url) {
 			$query->setUrl($url);
