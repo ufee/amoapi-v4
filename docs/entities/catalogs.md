@@ -1,4 +1,4 @@
-# Списки (Catalogs)
+# Списки
 
 [← README](../../README.md) · [Сущности](../entities.md)
 

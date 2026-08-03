@@ -6,53 +6,53 @@
 
 | Сущность | Файл |
 |----------|------|
-| [Аккаунт](entities/account.md) | account |
-| [Пользователи](entities/users.md) | users |
-| [Воронки и этапы](entities/pipelines.md) | pipelines, pipelineStatuses |
-| [Списки](entities/catalogs.md) | catalogs |
-| [Элементы списков](entities/catalog-elements.md) | catalogElements |
-| [Кастомные поля](entities/custom-fields.md) | customFields |
+| [Параметры аккаунта](entities/account.md) | account |
 | [Сделки](entities/leads.md) | leads |
+| [Воронки и этапы сделок](entities/pipelines.md) | pipelines, pipelineStatuses |
+| [Причины отказа](entities/loss-reasons.md) | lossReasons |
 | [Контакты](entities/contacts.md) | contacts |
 | [Компании](entities/companies.md) | companies |
-| [Покупатели](entities/customers.md) | customers |
-| [Сегменты](entities/customer-segments.md) | customerSegments |
-| [Причины отказа](entities/loss-reasons.md) | lossReasons |
+| [Списки](entities/catalogs.md) | catalogs |
+| [Элементы списков](entities/catalog-elements.md) | catalogElements |
+| [Связи сущностей](entities/links.md) | links |
 | [Задачи](entities/tasks.md) | tasks |
-| [Заметки](entities/notes.md) | notes |
+| [Поля и группы полей](entities/custom-fields.md) | customFields |
 | [События](entities/events.md) | events |
-| [Связи](entities/links.md) | links |
-| [Виджеты](entities/widgets.md) | widgets |
+| [Примечания](entities/notes.md) | notes |
+| [Покупатели](entities/customers.md) | customers |
+| [Статусы и сегменты покупателей](entities/customer-segments.md) | customerSegments |
+| [Пользователи](entities/users.md) | users |
 | [Вебхуки](entities/webhooks.md) | webhooks |
-| [Боты](entities/bots.md) | bots |
+| [Виджеты](entities/widgets.md) | widgets |
+| [Salesbot](entities/bots.md) | bots |
+| [Подписчики сущности](entities/subscriptions.md) | subscriptions |
 | [Источники](entities/sources.md) | sources |
-| [Подписчики](entities/subscriptions.md) | subscriptions |
 
 ## Сервисы
 
 ```php
 $service = $api->account();
-$api->users();
-$api->customFields($entity_type);
+$api->leads();
 $api->pipelines();
 $api->pipelineStatuses($pipeline_id);
 $api->lossReasons();
-$api->catalogs();
-$api->catalogElements($catalog_id);
-$api->leads();
 $api->contacts();
 $api->companies();
-$api->customers();
-$api->customerSegments();
+$api->catalogs();
+$api->catalogElements($catalog_id);
 $api->links();
 $api->tasks();
-$api->notes($entity_type);
+$api->customFields($entity_type);
 $api->events();
-$api->widgets();
+$api->notes($entity_type);
+$api->customers();
+$api->customerSegments();
+$api->users();
 $api->webhooks();
+$api->widgets();
 $api->bots();
-$api->sources();
 $api->subscriptions($entity_type, $entity_id); // entity_type: leads|customers
+$api->sources();
 ```
 
 ## Матрица возможностей

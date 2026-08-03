@@ -1,4 +1,4 @@
-# Подписчики (Subscriptions)
+# Подписчики сущности
 
 [← README](../../README.md) · [Сущности](../entities.md)
 

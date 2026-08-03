@@ -1,4 +1,4 @@
-# Боты
+# Salesbot
 
 [← README](../../README.md) · [Сущности](../entities.md)
 

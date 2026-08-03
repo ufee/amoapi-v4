@@ -1,6 +1,6 @@
 # 🚀 amoCRM/Kommo PHP API (v4) Client
 
-Поддерживает OAuth 2.0, кеширование, пагинацию, события, автоматическое обновление токенов, обработку ошибок и работу с любыми сущностями (сделки, контакты, компании, задачи, заметки и др.).
+Поддерживает OAuth 2.0, кеширование, пагинацию, события, автоматическое обновление токенов, обработку ошибок и работу с любыми сущностями (сделки, контакты, компании, задачи, примечания и др.).
 
 ---
 
@@ -63,24 +63,24 @@ foreach ($leads as $lead) {
 
 | Сущность | Файл |
 |----------|------|
-| [Аккаунт](docs/entities/account.md) | account |
-| [Пользователи](docs/entities/users.md) | users |
-| [Воронки и этапы](docs/entities/pipelines.md) | pipelines, pipelineStatuses |
-| [Списки](docs/entities/catalogs.md) | catalogs |
-| [Элементы списков](docs/entities/catalog-elements.md) | catalogElements |
-| [Кастомные поля](docs/entities/custom-fields.md) | customFields |
+| [Параметры аккаунта](docs/entities/account.md) | account |
 | [Сделки](docs/entities/leads.md) | leads |
+| [Воронки и этапы сделок](docs/entities/pipelines.md) | pipelines, pipelineStatuses |
+| [Причины отказа](docs/entities/loss-reasons.md) | lossReasons |
 | [Контакты](docs/entities/contacts.md) | contacts |
 | [Компании](docs/entities/companies.md) | companies |
-| [Покупатели](docs/entities/customers.md) | customers |
-| [Сегменты](docs/entities/customer-segments.md) | customerSegments |
-| [Причины отказа](docs/entities/loss-reasons.md) | lossReasons |
+| [Списки](docs/entities/catalogs.md) | catalogs |
+| [Элементы списков](docs/entities/catalog-elements.md) | catalogElements |
+| [Связи сущностей](docs/entities/links.md) | links |
 | [Задачи](docs/entities/tasks.md) | tasks |
-| [Заметки](docs/entities/notes.md) | notes |
+| [Поля и группы полей](docs/entities/custom-fields.md) | customFields |
 | [События](docs/entities/events.md) | events |
-| [Связи](docs/entities/links.md) | links |
-| [Виджеты](docs/entities/widgets.md) | widgets |
+| [Примечания](docs/entities/notes.md) | notes |
+| [Покупатели](docs/entities/customers.md) | customers |
+| [Статусы и сегменты покупателей](docs/entities/customer-segments.md) | customerSegments |
+| [Пользователи](docs/entities/users.md) | users |
 | [Вебхуки](docs/entities/webhooks.md) | webhooks |
-| [Боты](docs/entities/bots.md) | bots |
+| [Виджеты](docs/entities/widgets.md) | widgets |
+| [Salesbot](docs/entities/bots.md) | bots |
+| [Подписчики сущности](docs/entities/subscriptions.md) | subscriptions |
 | [Источники](docs/entities/sources.md) | sources |
-| [Подписчики](docs/entities/subscriptions.md) | subscriptions |

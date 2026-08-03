@@ -1,4 +1,4 @@
-# Связи (Links)
+# Связи сущностей
 
 [← README](../../README.md) · [Сущности](../entities.md)
 

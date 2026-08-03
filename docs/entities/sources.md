@@ -1,4 +1,4 @@
-# Источники (Sources)
+# Источники
 
 [← README](../../README.md) · [Сущности](../entities.md)
 
