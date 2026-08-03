@@ -6,11 +6,12 @@
 // все заметки по типу сущности
 $notes = $api->notes('leads')->get();
 $notes = $api->notes('contacts')->get();
+$notes = $api->notes('customers')->get();
 
 // заметки конкретной сущности
 $notes = $api->notes('leads', $lead_id)->get();
 
-// или через sugar-методы сервисов
+// sugar-методы есть у leads / contacts / companies (у customers — нет)
 $notes = $api->leads()->notes()->get();
 $notes = $api->contacts()->notes()->get();
 $notes = $api->companies()->notes()->get();
@@ -28,10 +29,11 @@ $note->unpin();
 $bool = $note->isPinned();
 ```
 
-Создание через модель сущности:
+Создание через модель сущности (в т.ч. у покупателей):
 
 ```php
 $note = $lead->createNote($type = 'common');
+$note = $customer->createNote($type = 'common');
 $notes = $lead->getNotes($filter = [])->fetchAll();
 $note = $lead->findNote($note_id);
 ```

@@ -67,7 +67,7 @@ $cf = $lead->cf()->byCode('PHONE');
 $cf = $lead->cf()->byType('radiobutton');
 
 $cfields = $lead->cf()->all();
-foreach($cfs as $cf) {
+foreach ($cfields as $cf) {
     print_r($cf->getValue());
     echo "\n";
 }

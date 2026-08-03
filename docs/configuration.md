@@ -14,6 +14,19 @@ $api = \Ufee\AmoV4\ApiClient::setInstance([
 ]);
 ```
 
+## Мультиаккаунтность
+
+Каждый `client_id` — отдельный экземпляр клиента.
+
+```php
+$apiA = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = A
+$apiB = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = B
+
+$apiA = \Ufee\AmoV4\ApiClient::getInstance($client_id_a);
+$exists = \Ufee\AmoV4\ApiClient::hasInstance($client_id_a);
+\Ufee\AmoV4\ApiClient::removeInstance($client_id_a);
+```
+
 ## Настройка параметров (опционально)
 
 ```php
@@ -22,9 +35,11 @@ $api->setParam('query_retries', 3);    // кол-во попыток при ош
 $api->setParam('lang', 'ru');          // язык аккаунта
 ```
 
-## Хранилище OAuth
+## OAuth 2.0
 
-### Файловое хранение OAuth-токенов
+### Хранилище токенов
+
+#### Файловое хранение
 
 Используется по умолчанию: `/src/Temp/{domain}/{client_id}.json`
 
@@ -32,13 +47,13 @@ $api->setParam('lang', 'ru');          // язык аккаунта
 $api->oauth->setStorageFiles('/path/to/oauth/storage');
 ```
 
-### Долгосрочный токен
+#### Долгосрочный токен
 
 ```php
 $api->oauth->setLongToken($long_token);
 ```
 
-### Redis
+#### Redis
 
 Поддерживается библиотека [phpredis](https://github.com/phpredis/phpredis)
 
@@ -51,7 +66,7 @@ $redis->select(4);
 $api->oauth->setStorageRedis($redis);
 ```
 
-### Mongodb
+#### MongoDB
 
 Поддерживается библиотека [mongo-php-library](https://github.com/mongodb/mongo-php-library)
 
@@ -59,14 +74,36 @@ $api->oauth->setStorageRedis($redis);
 $mongo = new \MongoDB\Client('mongodb://127.0.0.1');
 $collection = $mongo->selectCollection('amo', 'oauth');
 
-$api->oauth->setStorageMongo($mongo);
+$api->oauth->setStorageMongo($collection);
+```
+
+### Первичная авторизация
+
+```php
+// 1. URL для авторизации пользователя
+$url = $api->oauth->getUrl(['state' => 'custom-state']);
+// редирект пользователя на $url
+
+// 2. На callback-странице обменять code на токен (сохранится в storage)
+$oauth = $api->oauth->fetchToken($_GET['code']);
+
+// 3. Дальше клиент сам обновляет access_token при необходимости
+```
+
+### Работа с токеном вручную
+
+```php
+$oauth = $api->oauth->get();                 // весь набор данных
+$access = $api->oauth->get('access_token');  // конкретное поле
+$api->oauth->set($oauth);                   // записать вручную
+$api->oauth->refreshToken();                // принудительное обновление
 ```
 
 ## Кеширование данных
 
 Поддерживается кеширование справочников и общих данных аккаунта.
 
-### Время жизни для кэша / по умолчанию
+### Время жизни для кеша / по умолчанию
 
 ```php
 $api->cache->setTtl([
@@ -83,7 +120,7 @@ $api->cache->setTtl([
 ]);
 ```
 
-### Файловое хранение кэша
+### Файловое хранение кеша
 
 Используется по умолчанию: `/src/Temp/{domain}/{client_id}.{key}.cache`
 
@@ -120,15 +157,17 @@ $api->cache->setStorageRedis($redis);
 Мониторинг запросов, логирование, обработка ошибок, контроль.
 
 ```php
-$api->callbacks->on($event, function($payload) {
+$api->callbacks->on($event, function ($payload) {
    // подписка на события
 });
-```
 
-```php
-$api->callbacks->off($event, function($payload) {
-   // отписка от событий
+$api->callbacks->once($event, function ($payload) {
+   // одноразовая подписка (после первого вызова снимается)
 });
+
+$api->callbacks->off($event); // снять все callbacks события
+
+$api->callbacks->has($event); // bool
 ```
 
 ### Поддерживаемые события
@@ -136,27 +175,27 @@ $api->callbacks->off($event, function($payload) {
 События по query выполняются в последовательности, указанной ниже.
 
 ```php
-$api->callbacks->off('query.delay')->on('query.delay', function($query) {
+$api->callbacks->off('query.delay')->on('query.delay', function ($query) {
     // по умолчанию прописана логика задержек на основе $query->instance->getParam('query_delay')
     // пауза между запросами вычисляется автоматически
     sleep(1); // кастомная логика задержек между запросами
 });
 
-$api->callbacks->on('query.request.before', function($query) {
+$api->callbacks->on('query.request.before', function ($query) {
     // вызывается перед выполнением запроса
     echo '['.$query->method.'] '.$query->getUrl();
 });
 
-$api->callbacks->on('query.response.code', function($code, $query) {
+$api->callbacks->on('query.response.code', function ($code, $query) {
     // вызывается после выполнения запроса
-    // поумолчанию присутствует обработка кодов:
+    // по умолчанию присутствует обработка кодов:
     // 429 - повторные попытки
     // 401 - повторная попытка с переполучением токена из хранилища
     // 502,504 - однократный повтор
     // return false; прерывает дальнейшую логику обработки
 });
 
-$api->callbacks->on('query.response.fail', function($query, $code) {
+$api->callbacks->on('query.response.fail', function ($query, $code) {
     // вызывается после неудачного выполнения запроса
     // все коды ответа кроме 200,204
     if ($code === 0) {
@@ -166,7 +205,7 @@ $api->callbacks->on('query.response.fail', function($query, $code) {
     }
 });
 
-$api->callbacks->on('query.response.after', function($query, $code) {
+$api->callbacks->on('query.response.after', function ($query, $code) {
     // вызывается всегда после выполнения запроса
     if ($code === 0) {
         echo 'Error: '.$query->response->getError()."\n\n";
@@ -175,15 +214,15 @@ $api->callbacks->on('query.response.after', function($query, $code) {
     }
 });
 
-$api->callbacks->on('oauth.token.fetch', function($oauth, $query, $response) {
+$api->callbacks->on('oauth.token.fetch', function ($oauth, $query, $response) {
     // вызывается после извлечения токена
 });
 
-$api->callbacks->on('oauth.token.refresh', function($oauth, $query, $response) {
+$api->callbacks->on('oauth.token.refresh', function ($oauth, $query, $response) {
     // вызывается после обновления токена
 });
 
-$api->callbacks->on('oauth.token.refresh.error', function($exc, $query = null, $response = null) {
+$api->callbacks->on('oauth.token.refresh.error', function ($exc, $query = null, $response = null) {
     // вызывается после неудачного обновления токена
 });
 
@@ -192,27 +231,21 @@ $redis = new \Redis();
 $redis->connect('127.0.0.1');
 $redis->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_NONE);
 
-$this->crm->callbacks->on('oauth.token.refresh.lock', function($domain, $client_id) use ($redis) {
+$api->callbacks->on('oauth.token.refresh.lock', function ($domain, $client_id) use ($redis) {
     // необходимо вернуть true в случае успешной блокировки, иначе false
     return $redis->set('lock:'.$domain.':'.$client_id, 1, ['nx', 'ex' => 30]);
 });
 
-$this->crm->callbacks->on('oauth.token.refresh.unlock', function($domain, $client_id) use ($redis) {
+$api->callbacks->on('oauth.token.refresh.unlock', function ($domain, $client_id) use ($redis) {
     // снять блокировку
     $redis->del('lock:'.$domain.':'.$client_id);
 });
 ```
 
-## Первичное получение OAuth-токена
-
-```php
-$api->oauth->fetchToken($code); // токен сохранится в выбранном storage
-```
-
 ## Произвольные API запросы
 
 ```php
-$query = $api->query('GET','/api/v4/leads/'.$lead_id);
+$query = $api->query('GET', '/api/v4/leads/'.$lead_id);
 $query->execute();
 $raw = $query->response->validated();
 print_r($raw); // object of lead

@@ -1,15 +1,15 @@
 # 🚀 amoCRM/Kommo PHP API (v4) Client
 
-Поддерживает OAuth 2.0, кэширование, пагинацию, события, автоматическое обновление токенов, обработку ошибок и работу с любыми сущностями (сделки, контакты, компании, задачи, заметки и др.).
+Поддерживает OAuth 2.0, кеширование, пагинацию, события, автоматическое обновление токенов, обработку ошибок и работу с любыми сущностями (сделки, контакты, компании, задачи, заметки и др.).
 
 ---
 
 ## ✅ Возможности
 
-- ✅ Пддержка [amoCRM/Kommo API v4](https://www.amocrm.ru/developers/content/crm_platform/platform-abilities)
+- ✅ Поддержка [amoCRM/Kommo API v4](https://www.amocrm.ru/developers/content/crm_platform/platform-abilities)
 - ✅ OAuth 2.0 с автообновлением токенов
 - ✅ Хранилище токенов: файлы, Redis, MongoDB + долгосрочные токены
-- ✅ Кэширование справочников в файлах и Redis: пользователи, поля, типы задач и т.д.
+- ✅ Кеширование справочников в файлах и Redis: пользователи, поля, типы задач и т.д.
 - ✅ Постраничное извлечение сущностей через `foreach` и `do-while`
 - ✅ Обработка событий через `callbacks`: отладка, контроль
 - ✅ Ограничение частоты запросов
@@ -27,12 +27,28 @@ composer require ufee/amoapi-v4
 ## ⚙️ Быстрый старт
 
 ```php
-$api = \Ufee\AmoV4\ApiClient::setInstance([...]);
+$api = \Ufee\AmoV4\ApiClient::setInstance([
+    'domain'        => 'yourdomain',
+    'client_id'     => '8a8135d4-31ca-47...',
+    'client_secret' => 'zMZFNnho8FozhrDzxrbA9xuR9...',
+    'redirect_uri'  => 'https://yoursite.com/auth/callback',
+    'zone'          => 'ru', // или 'com' для Kommo
+]);
+
+// первичная авторизация (один раз)
+// $url = $api->oauth->getUrl();
+// $api->oauth->fetchToken($_GET['code']);
+
+// или долгосрочный токен
+// $api->oauth->setLongToken($long_token);
+
 $leads = $api->leads()->get();
 foreach ($leads as $lead) {
     echo $lead->name . "\n";
 }
 ```
+
+Подробнее: [Конфигурация](docs/configuration.md).
 
 ---
 
@@ -40,7 +56,7 @@ foreach ($leads as $lead) {
 
 | Раздел | Описание |
 |--------|----------|
-| [Конфигурация](docs/configuration.md) | Клиент, OAuth, кеш, callbacks, произвольные запросы |
+| [Конфигурация](docs/configuration.md) | Клиент, OAuth, кеш, callbacks, мультиаккаунт, произвольные запросы |
 | [Работа с сущностями](docs/entities.md) | Сервисы, модели, коллекции, пагинация, фильтры, поиск |
 
 ### Сущности
@@ -49,7 +65,7 @@ foreach ($leads as $lead) {
 |----------|------|
 | [Аккаунт](docs/entities/account.md) | account |
 | [Пользователи](docs/entities/users.md) | users |
-| [Воронки и этапы](docs/entities/pipelines.md) | pipelines, statuses |
+| [Воронки и этапы](docs/entities/pipelines.md) | pipelines, pipelineStatuses |
 | [Списки](docs/entities/catalogs.md) | catalogs |
 | [Элементы списков](docs/entities/catalog-elements.md) | catalogElements |
 | [Кастомные поля](docs/entities/custom-fields.md) | customFields |
@@ -65,6 +81,6 @@ foreach ($leads as $lead) {
 | [Связи](docs/entities/links.md) | links |
 | [Виджеты](docs/entities/widgets.md) | widgets |
 | [Вебхуки](docs/entities/webhooks.md) | webhooks |
-| [Bots](docs/entities/bots.md) | bots |
+| [Боты](docs/entities/bots.md) | bots |
 | [Источники](docs/entities/sources.md) | sources |
 | [Подписчики](docs/entities/subscriptions.md) | subscriptions |

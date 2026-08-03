@@ -5,7 +5,11 @@
 ```php
 $contacts = $api->contacts()->get();
 $contacts = $api->contacts;
-$contacts = $api->contacts()->with(['leads', 'customers', 'catalog_elements'])->get();
+$contacts = $api->contacts()->with([
+    \Ufee\AmoV4\Services\Contacts::LEADS,
+    \Ufee\AmoV4\Services\Contacts::CUSTOMERS,
+    \Ufee\AmoV4\Services\Contacts::CATALOG_ELEMENTS,
+])->get();
 
 $contacts = $api->contacts()->searchByName('Иван', 1);
 $contacts = $api->contacts()->searchByPhone('+79001234567', 1);
@@ -19,13 +23,19 @@ $contact->cf('Email')->setValue('a@b.ru');
 $contact->cf('Phone')->setValue('+79001234567');
 $contact->save();
 
+$user = $contact->responsibleUser();
+
 $contact->attachTag('VIP');
+$contact->attachTags(['VIP', 'Partner']);
 $contact->attachLead($lead_id);
 $contact->attachCompany($company_id);
 
 $paginate = $contact->getTasks($filter = []);
 $task = $contact->createTask($type = 1);
 $note = $contact->createNote($type = 'common');
+
+// заметки через сервис
+$notes = $api->contacts()->notes()->get();
 ```
 
 См. также: [кастомные поля](custom-fields.md), [связи](links.md), [задачи](tasks.md), [заметки](notes.md).

@@ -3,7 +3,7 @@
 [← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
-$paginate = $api->events()->filter(['type' => 'lead_added'])->paginate();
+$paginate = $api->events()->filter(['type' => 'lead_added']);
 foreach ($paginate as $page_num => $events) {
     print_r($events);
 }

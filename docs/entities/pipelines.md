@@ -41,4 +41,8 @@ $status->save();
 // удаление этапа
 $status->delete();
 $pipeline->deleteStatus($status_id);
+
+// соседние этапы
+$next = $status->next();
+$prev = $status->previous();
 ```

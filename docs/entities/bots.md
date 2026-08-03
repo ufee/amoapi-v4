@@ -1,9 +1,12 @@
-# Bots
+# Боты
 
 [← README](../../README.md) · [Сущности](../entities.md)
 
 ```php
-// запуск Bot (до 100 задач за запрос)
+$bots = $api->bots()->get();
+$bot = $api->bots()->find($bot_id);
+
+// запуск бота (до 100 задач за запрос)
 // вариант 1: массив задач
 $is_started = $api->bots()->run([
     [
@@ -20,7 +23,7 @@ $is_started = $api->bots()->run(
     $entity_type = 'contacts' // leads|contacts|customers
 );
 
-// остановка Bot для сделки
+// остановка бота для сделки
 $is_stopped = $api->bots()->stop(
     $bot_id = 565,
     $entity_id = 23890022,

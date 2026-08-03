@@ -7,7 +7,7 @@ $tasks = $api->tasks()->get();
 $paginate = $api->tasks()->filter([
     'entity_id' => $lead_id,
     'entity_type' => 'leads',
-])->paginate();
+]);
 
 $task = $api->tasks()->create([
     'text' => 'Звонок',
@@ -25,6 +25,7 @@ $task->save();
 // типы задач из кеша
 $taskTypes = $api->cache->taskTypes();
 $type = $task->type();
+$user = $task->responsibleUser();
 ```
 
 Создание через модель сущности:

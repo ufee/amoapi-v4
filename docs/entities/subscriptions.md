@@ -2,6 +2,8 @@
 
 [← README](../../README.md) · [Сущности](../entities.md)
 
+Сервис только для чтения списка подписчиков. Доступен для `leads` и `customers`.
+
 ```php
 // список подписчиков сделки
 $subscriptions = $api->subscriptions('leads', $lead_id)->get();
@@ -13,7 +15,7 @@ foreach ($subscriptions as $subscription) {
 // список подписчиков покупателя
 $customer_subscriptions = $api->subscriptions('customers', $customer_id)->get();
 
-// получение через модель сделки
+// через модель — только у сделки (у Customer метода getSubscriptions нет)
 $lead = $api->leads()->find($lead_id);
 $subscriptions = $lead->getSubscriptions();
 ```
