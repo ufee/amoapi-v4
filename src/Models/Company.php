@@ -10,6 +10,7 @@ class Company extends WithCfield
 	use Traits\Tags;
 	use Traits\Tasks;
 	use Traits\Notes;
+	use Traits\Files;
 	use Traits\Links;
 	use Traits\LinkedLeads;
 	use Traits\LinkedContacts;

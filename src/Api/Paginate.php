@@ -232,7 +232,8 @@ class Paginate implements \Iterator
 		if (!isset($data->_embedded->{$entity_key})) {
 			throw new Exceptions\AmoException('Invalid API response (no ' . $entity_key . '), code: ' . $response->getCode(), $response->getCode());
 		}
-		$this->page = $data->_page ?? 1;
+		// Drive API does not return _page, keep the requested page number
+		$this->page = $data->_page ?? $this->page;
 		$this->links = $data->_links ?? (object) [];
 		$this->models = $this->service->createCollection($data->_embedded->{$entity_key});
 		$this->models_loaded += $this->models->count();

@@ -16,6 +16,9 @@ class Query
 		'args',
 		'post_data',
 		'json_data',
+		'raw_data',
+		'host',
+		'absolute',
 		'retry',
 		'start_time',
 		'end_time',
@@ -64,6 +67,9 @@ class Query
 		$this->attributes['method'] = 'GET';
 		$this->attributes['post_data'] = [];
 		$this->attributes['json_data'] = [];
+		$this->attributes['raw_data'] = null;
+		$this->attributes['host'] = null;
+		$this->attributes['absolute'] = false;
 		$this->prepare();
 	}
 
@@ -156,6 +162,7 @@ class Query
 	public function setJsonData($data = [])
 	{
 		$data = is_object($data) ? (array) $data : $data;
+		$this->attributes['raw_data'] = null;
 		foreach ($data as $key => $val) {
 			$this->attributes['json_data'][$key] = $val;
 		}
@@ -169,7 +176,35 @@ class Query
 	 */
 	public function setUrl(string $url)
 	{
+		if (preg_match('#^https?://#i', $url)) {
+			$this->attributes['absolute'] = true;
+		}
 		$this->attributes['url'] = $url;
+		return $this;
+	}
+
+	/**
+	 * Set request host (without scheme), e.g. drive-b.amocrm.ru
+	 * @param string $host
+	 * @return Query
+	 */
+	public function setHost(string $host)
+	{
+		$this->attributes['host'] = preg_replace('#^https?://#i', '', rtrim($host, '/'));
+		$this->attributes['absolute'] = false;
+		return $this;
+	}
+
+	/**
+	 * Set raw request body (binary upload)
+	 * @param string $data
+	 * @return Query
+	 */
+	public function setRawData(string $data)
+	{
+		$this->attributes['raw_data'] = $data;
+		$this->attributes['json_data'] = [];
+		$this->attributes['post_data'] = [];
 		return $this;
 	}
 
@@ -224,10 +259,18 @@ class Query
 	public function getUrl()
 	{
 		$url = $this->url;
+		if ($this->absolute) {
+			if ($this->args) {
+				$separator = strpos($url, '?') === false ? '?' : '&';
+				$url .= $separator . http_build_query($this->args);
+			}
+			return $url;
+		}
 		if ($this->args) {
 			$url .= '?' . http_build_query($this->args);
 		}
-		return 'https://' . $this->instance->getParam('crm_host') . $url;
+		$host = $this->host ?: $this->instance->getParam('crm_host');
+		return 'https://' . $host . $url;
 	}
 
 	/**
@@ -276,7 +319,7 @@ class Query
 		$this->attributes['execution_time'] = round($this->end_time - $this->start_time, 5);
 		$this->attributes['memory_usage'] = memory_get_peak_usage(true) / 1024 / 1024;
 
-		if (in_array($code, [200, 204])) {
+		if (in_array($code, [200, 202, 204])) {
 			$instance->queries->pushQuery($this);
 		} else {
 			$instance->callbacks->trigger('query.response.fail', $this, $code);
@@ -307,12 +350,21 @@ class Query
 		curl_setopt($this->curl, CURLOPT_URL, $this->getUrl());
 		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeaders());
 		curl_setopt($this->curl, CURLOPT_POST, true);
+		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestBody());
+		return curl_exec($this->curl);
+	}
 
-		if (!empty($this->attributes['json_data'])) {
-			curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($this->json_data));
-		} else {
-			curl_setopt($this->curl, CURLOPT_POSTFIELDS, http_build_query($this->post_data));
-		}
+	/**
+	 * PUT query
+	 * @return string|bool
+	 */
+	public function put()
+	{
+		$this->attributes['start_time'] = microtime(true);
+		curl_setopt($this->curl, CURLOPT_URL, $this->getUrl());
+		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeaders());
+		curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PUT');
+		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestBody());
 		return curl_exec($this->curl);
 	}
 
@@ -326,8 +378,7 @@ class Query
 		curl_setopt($this->curl, CURLOPT_URL, $this->getUrl());
 		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeaders());
 		curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
-		curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($this->json_data));
-
+		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestBody(true));
 		return curl_exec($this->curl);
 	}
 
@@ -341,9 +392,24 @@ class Query
 		curl_setopt($this->curl, CURLOPT_URL, $this->getUrl());
 		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->getHeaders());
 		curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
-		curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($this->json_data));
-
+		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $this->getRequestBody(true));
 		return curl_exec($this->curl);
+	}
+
+	/**
+	 * Build request body
+	 * @param bool $json_required
+	 * @return string
+	 */
+	protected function getRequestBody(bool $json_required = false)
+	{
+		if (!is_null($this->attributes['raw_data'])) {
+			return $this->attributes['raw_data'];
+		}
+		if (!empty($this->attributes['json_data']) || $json_required) {
+			return json_encode($this->json_data ?: []);
+		}
+		return http_build_query($this->post_data);
 	}
 
 	/**

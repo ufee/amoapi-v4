@@ -27,6 +27,7 @@
 | [Salesbot](entities/bots.md) | bots |
 | [Подписчики сущности](entities/subscriptions.md) | subscriptions |
 | [Источники](entities/sources.md) | sources |
+| [Файлы (Drive API)](entities/files.md) | files |
 
 ## Сервисы
 
@@ -53,6 +54,7 @@ $api->widgets();
 $api->bots();
 $api->subscriptions($entity_type, $entity_id); // entity_type: leads|customers
 $api->sources();
+$api->files();
 ```
 
 ## Матрица возможностей
@@ -63,6 +65,7 @@ $api->sources();
 | Tasks (модель) | ✓ | ✓ | ✓ | ✓ |
 | Notes (модель) | ✓ | ✓ | ✓ | ✓ |
 | Notes sugar `$service->notes()` | ✓ | ✓ | ✓ | — |
+| Files (`getFiles` / `attachFiles`) | ✓ | ✓ | ✓ | ✓ |
 | Links | ✓ | ✓ | ✓ | ✓ |
 | Catalog elements | ✓ | — | — | ✓ |
 | Subscriptions (сервис) | ✓ | — | — | ✓ |
