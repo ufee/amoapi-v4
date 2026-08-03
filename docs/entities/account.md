@@ -12,6 +12,7 @@ $account = $api->cache->account();
 // модель аккаунта
 echo $account->id;
 echo $account->name;
+echo $account->drive_url; // хост Files/Drive API, см. [файлы](files.md)
 
 $userGroups = $account->userGroups; // collection
 $taskTypes = $account->taskTypes; // collection
