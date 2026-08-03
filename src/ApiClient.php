@@ -22,6 +22,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\PipelineStatuses pipelineStatuses(...$args)
  * @method \Ufee\AmoV4\Services\CustomFields customFields(...$args)
  * @method \Ufee\AmoV4\Services\Leads leads(...$args)
+ * @method \Ufee\AmoV4\Services\Unsorted unsorted(...$args)
  * @method \Ufee\AmoV4\Services\Contacts contacts(...$args)
  * @method \Ufee\AmoV4\Services\Companies companies(...$args)
  * @method \Ufee\AmoV4\Services\Customers customers(...$args)
@@ -49,6 +50,7 @@ class ApiClient
 		'pipelineStatuses',
 		'customFields',
 		'leads',
+		'unsorted',
 		'contacts',
 		'companies',
 		'customers',

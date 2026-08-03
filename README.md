@@ -65,6 +65,7 @@ foreach ($leads as $lead) {
 |----------|------|
 | [Параметры аккаунта](docs/entities/account.md) | account |
 | [Сделки](docs/entities/leads.md) | leads |
+| [Неразобранное](docs/entities/unsorted.md) | unsorted |
 | [Воронки и этапы сделок](docs/entities/pipelines.md) | pipelines, pipelineStatuses |
 | [Причины отказа](docs/entities/loss-reasons.md) | lossReasons |
 | [Контакты](docs/entities/contacts.md) | contacts |
