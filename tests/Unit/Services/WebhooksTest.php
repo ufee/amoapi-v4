@@ -54,4 +54,51 @@ class WebhooksTest extends TestCase
 
 		$this->assertTrue($webhook->unsubscribe());
 	}
+
+	public function testGetSubscribeAndUnsubscribeViaStub(): void
+	{
+		$api = $this->makeStubApiClient();
+		$url = 'https://example.com/amo-hook';
+
+		$api->pushResponse(200, [
+			'_embedded' => (object) [
+				'webhooks' => [
+					(object) [
+						'destination' => $url,
+						'settings' => ['add_lead'],
+					],
+				],
+			],
+		]);
+		$list = $api->webhooks()->get($url);
+		$this->assertCount(1, $list);
+		$this->assertSame(['destination' => $url], $api->lastQuery->args['filter']);
+
+		$api->pushResponse(200, ['_embedded' => (object) []]);
+		$empty = $api->webhooks()->get();
+		$this->assertCount(0, $empty);
+
+		$api->pushResponse(200, [
+			'destination' => $url,
+			'settings' => ['add_lead', 'update_lead'],
+		]);
+		$created = $api->webhooks()->subscribe($url, ['add_lead', 'update_lead']);
+		$this->assertInstanceOf(Webhook::class, $created);
+		$this->assertSame($url, $created->destination);
+		$this->assertSame('POST', $api->lastQuery->method);
+
+		$api->pushResponse(204, '');
+		$this->assertTrue($api->webhooks()->unsubscribe($url));
+		$this->assertSame('DELETE', $api->lastQuery->method);
+	}
+
+	public function testGetWithoutEmbeddedThrows(): void
+	{
+		$api = $this->makeStubApiClient();
+		$api->pushResponse(200, ['detail' => 'ok']);
+
+		$this->expectException(\Ufee\AmoV4\Exceptions\AmoException::class);
+		$this->expectExceptionMessage('embedded not found');
+		$api->webhooks()->get();
+	}
 }

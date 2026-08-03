@@ -32,7 +32,8 @@ class Webhooks extends Service
 
 		$validated = $query->response->validated();
 		if (!property_exists($validated, '_embedded')) {
-			throw new Exceptions\AmoException('Invalid API response for entities, embedded not found, code: '.$this->getCode(), $this->getCode());
+			$code = $query->response->getCode();
+			throw new Exceptions\AmoException('Invalid API response for entities, embedded not found, code: '.$code, $code);
 		}
 		if (property_exists($validated->_embedded, $this->entity_key)) {
 			return $this->createCollection($validated->_embedded->{$this->entity_key});
