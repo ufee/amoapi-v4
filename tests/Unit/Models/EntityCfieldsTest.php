@@ -9,6 +9,7 @@ use Ufee\AmoV4\Models\EntityCfields\DateField;
 use Ufee\AmoV4\Models\EntityCfields\DateTimeField;
 use Ufee\AmoV4\Models\EntityCfields\EntityField;
 use Ufee\AmoV4\Models\EntityCfields\FileField;
+use Ufee\AmoV4\Models\File;
 use Ufee\AmoV4\Models\EntityCfields\JurField;
 use Ufee\AmoV4\Models\EntityCfields\MultiSelectField;
 use Ufee\AmoV4\Models\EntityCfields\NumericField;
@@ -139,6 +140,124 @@ class EntityCfieldsTest extends TestCase
 		$raw = $model->cf(1)->getRawData();
 		$this->assertCount(1, $raw->values);
 		$this->assertNull($raw->values[0]->value);
+	}
+
+	public function testFileFieldGettersAndHasFile(): void
+	{
+		$value = (object) [
+			'file_uuid' => 'u-1',
+			'version_uuid' => 'v-1',
+			'file_name' => 'doc.pdf',
+			'file_size' => 2048,
+		];
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'File', 'F', 'file', $value),
+			$this->cf(2, 'Empty', 'E', 'file'),
+			$this->cf(3, 'Plain', 'P', 'file', 'plain-uuid'),
+		]);
+
+		/** @var FileField $cf */
+		$cf = $model->cf(1);
+		$this->assertTrue($cf->hasFile());
+		$this->assertSame('u-1', $cf->getUuid());
+		$this->assertSame('v-1', $cf->getVersionUuid());
+		$this->assertSame('doc.pdf', $cf->getFileName());
+		$this->assertSame(2048, $cf->getFileSize());
+
+		$this->assertFalse($model->cf(2)->hasFile());
+		$this->assertNull($model->cf(2)->getUuid());
+		$this->assertNull($model->cf(2)->getFileName());
+		$this->assertNull($model->cf(2)->getFileSize());
+
+		$this->assertTrue($model->cf(3)->hasFile());
+		$this->assertSame('plain-uuid', $model->cf(3)->getUuid());
+	}
+
+	public function testFileFieldSetFileFromModelArrayAndObject(): void
+	{
+		$api = $this->makeApiClient();
+		$file = $api->files()->create([
+			'uuid' => 'u-9',
+			'version_uuid' => 'v-9',
+			'name' => 'from-model.pdf',
+			'size' => 100,
+		]);
+		$model = $api->contacts()->create([
+			'name' => 'CF',
+			'custom_fields_values' => [
+				$this->cf(1, 'File', 'F', 'file'),
+			],
+		]);
+
+		/** @var FileField $cf */
+		$cf = $model->cf(1);
+		$cf->setFile($file);
+		$this->assertSame('u-9', $cf->getUuid());
+		$this->assertSame('v-9', $cf->getVersionUuid());
+		$this->assertSame('from-model.pdf', $cf->getFileName());
+		$this->assertSame(100, $cf->getFileSize());
+
+		$cf->setFile([
+			'uuid' => 'u-arr',
+			'name' => 'arr.txt',
+			'size' => 7,
+		]);
+		$this->assertSame('u-arr', $cf->getUuid());
+		$this->assertSame('arr.txt', $cf->getFileName());
+		$this->assertSame(7, $cf->getFileSize());
+
+		$cf->setFile((object) [
+			'file_uuid' => 'u-obj',
+			'version_uuid' => 'v-obj',
+			'file_name' => 'obj.bin',
+			'file_size' => 3,
+		]);
+		$value = $cf->getValue();
+		$this->assertSame('u-obj', $value->file_uuid);
+		$this->assertSame('v-obj', $value->version_uuid);
+		$this->assertSame('obj.bin', $value->file_name);
+		$this->assertSame(3, $value->file_size);
+
+		$payload = $model->getChangedRawData();
+		$this->assertSame('u-obj', $payload->custom_fields_values[0]->values[0]->value->file_uuid);
+	}
+
+	public function testFileFieldSetFileRequiresUuid(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'File', 'F', 'file'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('requires file_uuid or uuid');
+		$model->cf(1)->setFile(['file_name' => 'x.txt']);
+	}
+
+	public function testFileFieldGetFileLoadsFromDrive(): void
+	{
+		$api = $this->makeStubApiClient();
+		$api->setParam('drive_url', 'https://drive-b.amocrm.ru');
+		$model = $api->contacts()->create([
+			'name' => 'CF',
+			'custom_fields_values' => [
+				$this->cf(1, 'File', 'F', 'file', (object) [
+					'file_uuid' => 'u-drive',
+					'file_name' => 'a.txt',
+					'file_size' => 1,
+				]),
+			],
+		]);
+
+		$api->pushResponse(200, [
+			'uuid' => 'u-drive',
+			'name' => 'a.txt',
+			'size' => 1,
+		]);
+
+		$file = $model->cf(1)->getFile();
+		$this->assertInstanceOf(File::class, $file);
+		$this->assertSame('u-drive', $file->uuid);
+		$this->assertNull($model->cf(1)->reset()->getFile());
 	}
 
 	public function testSetValuesAndGetValues(): void
