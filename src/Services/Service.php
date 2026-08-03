@@ -269,6 +269,14 @@ class Service
 		return $this;
 	}
 
+	/**
+	 * Args for custom fields API / cache
+	 * @return array
+	 */
+	public function customFieldsArgs(): array
+	{
+		return [$this->entity_key];
+	}
 
 	/**
 	 * Get query arg value

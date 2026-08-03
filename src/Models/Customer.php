@@ -13,6 +13,7 @@ class Customer extends WithCfield
 	use Traits\Links;
 	use Traits\LinkedContacts;
 	use Traits\LinkedCompanies;
+	use Traits\LinkedCatalogElements;
 	use Traits\ResponsibleUser;
 	use Traits\MainContact;
 

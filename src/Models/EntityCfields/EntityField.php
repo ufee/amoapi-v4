@@ -215,7 +215,7 @@ class EntityField
 		}
 		if ($property === 'field') {
 			$service = $this->model->service;
-			return $service->instance->cache->customFields($service->entity_key)->find('id', $this->data->field_id)->first();
+			return $service->instance->cache->customFields(...$service->customFieldsArgs())->find('id', $this->data->field_id)->first();
 		}
 		return null;
 	}

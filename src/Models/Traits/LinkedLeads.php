@@ -63,8 +63,8 @@ trait LinkedLeads
      * Get linked leads
 	 * @return Leads|bool
      */
-    public function leads()
+    public function leads(array $with = [])
     {
-		return $this->links()->get(['to_entity_type' => 'leads'])->leads();
+		return $this->links()->get(['to_entity_type' => 'leads'])->leads($with);
 	}
 }
