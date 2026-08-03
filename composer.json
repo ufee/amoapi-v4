@@ -28,9 +28,23 @@
     "require": {
         "php": ">=7.4"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
     "autoload": {
         "psr-4": {
             "Ufee\\AmoV4\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ufee\\AmoV4\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testdox",
+        "test:unit": "phpunit --testsuite Unit --testdox",
+        "test:unit:compact": "phpunit --testsuite Unit",
+        "test:integration": "phpunit --testsuite Integration --testdox"
     }
 }

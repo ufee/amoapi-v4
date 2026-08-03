@@ -50,6 +50,8 @@ foreach ($leads as $lead) {
 
 Подробнее: [Конфигурация](docs/configuration.md).
 
+Тесты: [docs/tests.md](docs/tests.md).
+
 ---
 
 ## 📚 Документация
@@ -58,10 +60,11 @@ foreach ($leads as $lead) {
 |--------|----------|
 | [Конфигурация](docs/configuration.md) | Клиент, OAuth, кеш, callbacks, мультиаккаунт, произвольные запросы |
 | [Работа с сущностями](docs/entities.md) | Сервисы, модели, коллекции, пагинация, фильтры, поиск |
+| [Тесты](docs/tests.md) | Unit / integration, `.env`, coverage |
 
 ### Сущности
 
-| Сущность | Файл |
+| Сущность |  |
 |----------|------|
 | [Параметры аккаунта](docs/entities/account.md) | account |
 | [Сделки](docs/entities/leads.md) | leads |

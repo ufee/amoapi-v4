@@ -545,8 +545,10 @@ class Query
 	 */
 	public function __destruct()
 	{
-		if (is_resource($this->curl)) {
-			curl_close($this->curl);
+		$curl = $this->attributes['curl'] ?? null;
+		// PHP 7: resource; PHP 8+: CurlHandle
+		if ($curl !== null) {
+			curl_close($curl);
 		}
 	}
 }

@@ -20,11 +20,11 @@ class FileStorage extends AbstractStorage
 			throw new \InvalidArgumentException('File Storage options[path] must be string path');
 		}
 		$this->options['serialize'] ??= 'serialize';
-		if (isset($this->options['serialize']) && !is_callable('serialize')) {
+		if (isset($this->options['serialize']) && !is_callable($this->options['serialize'])) {
 			throw new \InvalidArgumentException('Option serialize must be callable function');
 		}
 		$this->options['unserialize'] ??= 'unserialize';
-		if (isset($this->options['unserialize']) && !is_callable('unserialize')) {
+		if (isset($this->options['unserialize']) && !is_callable($this->options['unserialize'])) {
 			throw new \InvalidArgumentException('Option unserialize must be callable function');
 		}
 	}
