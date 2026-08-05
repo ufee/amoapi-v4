@@ -145,7 +145,7 @@ class Files extends Service
 			$file_name = $options['file_name'] ?? basename($source);
 			$file_size = filesize($source);
 			$content_type = $options['content_type'] ?? (function_exists('mime_content_type') ? (mime_content_type($source) ?: 'application/octet-stream') : 'application/octet-stream');
-			$handle = fopen($source, 'rb');
+			$handle = @fopen($source, 'rb');
 			if ($handle === false) {
 				throw new \RuntimeException('Unable to open file: ' . $source);
 			}

@@ -125,3 +125,5 @@ $lead->attachFiles([$uuid1, $uuid2]);
 $files = $lead->getFiles(); // массивы: $row['file_uuid'], $row['id']
 $lead->detachFiles($uuid1);
 ```
+
+Чтобы записать файл в **кастомное поле типа `file`**, используйте `FileField::setFile()` — см. [Поля → file](custom-fields.md#file).

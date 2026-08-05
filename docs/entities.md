@@ -8,6 +8,7 @@
 |----------|------|
 | [Параметры аккаунта](entities/account.md) | account |
 | [Сделки](entities/leads.md) | leads |
+| [Неразобранное](entities/unsorted.md) | unsorted |
 | [Воронки и этапы сделок](entities/pipelines.md) | pipelines, pipelineStatuses |
 | [Причины отказа](entities/loss-reasons.md) | lossReasons |
 | [Контакты](entities/contacts.md) | contacts |
@@ -34,6 +35,7 @@
 ```php
 $service = $api->account();
 $api->leads();
+$api->unsorted();
 $api->pipelines();
 $api->pipelineStatuses($pipeline_id);
 $api->lossReasons();

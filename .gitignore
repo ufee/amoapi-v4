@@ -2,3 +2,8 @@
 .DS_Store
 .idea
 .cursor
+/vendor
+.phpunit.result.cache
+.env
+.env.local
+composer.lock

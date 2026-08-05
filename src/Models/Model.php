@@ -15,6 +15,7 @@ class Model
 	protected $temporary = [];
 	protected $changed_fields = [];
 	protected $changed_embedded = [];
+	protected $on_create = [];
 	protected $service;
 
 	/**
@@ -113,12 +114,24 @@ class Model
 	}
 
 	/**
+	 * Register callback after successful create (save without id)
+	 * @param callable $callback function(Model $model): void
+	 * @return Model
+	 */
+	public function onCreate(callable $callback)
+	{
+		$this->on_create[] = $callback;
+		return $this;
+	}
+
+	/**
 	 * Save model in CRM
 	 * @return bool
 	 */
 	public function save()
 	{
-		if (empty($this->fields['id'])) {
+		$is_new = empty($this->fields['id']);
+		if ($is_new) {
 			// create new entity
 			if (!$result = $this->service->add($this->getChangedRawData())) {
 				return false;
@@ -135,6 +148,13 @@ class Model
 			$this->setSilent($field, $val);
 		}
 		$this->_saved();
+		if ($is_new && $this->on_create !== []) {
+			$callbacks = $this->on_create;
+			$this->on_create = [];
+			foreach ($callbacks as $callback) {
+				$callback($this);
+			}
+		}
 		return true;
 	}
 
