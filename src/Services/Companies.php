@@ -42,7 +42,7 @@ class Companies extends Service
 	 * Все with-параметры для обогащения ответа
 	 * @return string[]
 	 */
-	public static function withAll(): array
+	public static function withValues(): array
 	{
 		return [
 			self::CATALOG_ELEMENTS,
@@ -50,5 +50,14 @@ class Companies extends Service
 			self::CUSTOMERS,
 			self::CONTACTS,
 		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
 	}
 }

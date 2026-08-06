@@ -5,6 +5,12 @@
 ```php
 $customers = $api->customers()->get();
 $customers = $api->customers;
+$customers = $api->customers()->withAll()->get();
+$customers = $api->customers()->with([
+    \Ufee\AmoV4\Services\Customers::CATALOG_ELEMENTS,
+    \Ufee\AmoV4\Services\Customers::CONTACTS,
+    \Ufee\AmoV4\Services\Customers::COMPANIES,
+])->get();
 $customers = $api->customers()->searchByName('Иван', 1);
 
 $customer = $api->customers()->find($customer_id);

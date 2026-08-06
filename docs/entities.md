@@ -83,9 +83,12 @@ $api->files();
 $service->maxPageRows($value);
 $service->orderBy($field, $direction = 'asc');
 $service->with($values);
+$service->withAll(); // все with-параметры сервиса (где доступно)
 $service->setQueryArg($key, $value);
 $service->setQueryArgs($args = []);
 ```
+
+Список значений: `ServiceClass::withValues()`.
 
 ## Получение сущностей
 

@@ -57,7 +57,7 @@ class Leads extends Service
 	 * Все with-параметры для обогащения ответа (без only_deleted)
 	 * @return string[]
 	 */
-	public static function withAll(): array
+	public static function withValues(): array
 	{
 		return [
 			self::CATALOG_ELEMENTS,
@@ -67,6 +67,15 @@ class Leads extends Service
 			self::SOURCE_ID,
 			self::SOURCE,
 		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
 	}
 
 	/**

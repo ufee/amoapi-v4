@@ -6,6 +6,8 @@
 $leads = $api->leads()->get();
 $leads = $api->leads;
 $leads = $api->leads()->with(['source_id', 'source'])->get();
+$leads = $api->leads()->withAll()->get(); // все with, кроме only_deleted
+$leads = $api->leads()->with(\Ufee\AmoV4\Services\Leads::withValues())->get();
 $leads = $api->leads()->searchByCustomField('Москва', 'Город', 1); // 1 page (250 rows max)
 $leads = $api->leads()->searchByName('Разработка ПО', 1, ['source_id', 'source']);
 

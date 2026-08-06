@@ -4,10 +4,22 @@
 
 ```php
 $bots = $api->bots()->get();
+$bots = $api->bots()->withAll()->get();
+$bots = $api->bots()->with([\Ufee\AmoV4\Services\Bots::FAVORITE])->get();
+$bots = $api->bots()->filter([
+    'type_functionality' => [\Ufee\AmoV4\Services\Bots::TYPE_REGULAR],
+])->get();
 $bot = $api->bots()->find($bot_id);
+$bot = $api->bots()->find($bot_id, [\Ufee\AmoV4\Services\Bots::FAVORITE]);
 
-// запуск бота (до 100 задач за запрос)
-// вариант 1: массив задач
+// запуск одного бота: POST /api/v4/bots/{id}/run
+$is_started = $api->bots()->run(
+    $bot_id = 565,
+    $entity_id = 76687686,
+    $entity_type = 'contacts' // leads|contacts|customers
+);
+
+// групповой запуск (до 100 задач): POST /api/v4/bots/run
 $is_started = $api->bots()->run([
     [
         'bot_id' => 565,
@@ -16,17 +28,10 @@ $is_started = $api->bots()->run([
     ],
 ]);
 
-// вариант 2: 3 параметра (bot_id, entity_id, entity_type)
-$is_started = $api->bots()->run(
-    $bot_id = 565,
-    $entity_id = 76687686,
-    $entity_type = 'contacts' // leads|contacts|customers
-);
-
-// остановка бота для сделки
+// остановка бота для сделки: POST /api/v4/bots/{id}/stop
 $is_stopped = $api->bots()->stop(
     $bot_id = 565,
     $entity_id = 23890022,
-    $entity_type = 'leads' // leads|customers
+    $entity_type = 'leads' // только leads
 );
 ```

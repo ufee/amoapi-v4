@@ -6,6 +6,31 @@ namespace Ufee\AmoV4\Services;
 
 class Bots extends Service
 {
+	/**
+	 * Добавляет в ответ свойство is_favorite, определяющее, добавлен ли Salesbot в избранное у текущего пользователя аккаунта
+	 */
+	public const FAVORITE = 'favorite';
+
+	/**
+	 * Стандартный Salesbot без специализации
+	 */
+	public const TYPE_REGULAR = 'regular';
+
+	/**
+	 * Бот для отправки приветственных сообщений
+	 */
+	public const TYPE_GREETING = 'greeting';
+
+	/**
+	 * Бот для проведения рассылок
+	 */
+	public const TYPE_MARKETING = 'marketing';
+
+	/**
+	 * Бот для проведения NPS-опросов
+	 */
+	public const TYPE_NPS = 'nps';
+
 	protected $api_path = '/api/v4/bots';
 	protected $entity_key = 'items';
 
@@ -16,7 +41,41 @@ class Bots extends Service
 	protected $allowed_run_entity_types = ['leads', 'contacts', 'customers'];
 
 	/** @var array */
-	protected $allowed_stop_entity_types = ['leads', 'customers'];
+	protected $allowed_stop_entity_types = ['leads'];
+
+	/**
+	 * Все with-параметры для обогащения ответа
+	 * @return string[]
+	 */
+	public static function withValues(): array
+	{
+		return [
+			self::FAVORITE,
+		];
+	}
+
+	/**
+	 * Все значения filter[type_functionality]
+	 * @return string[]
+	 */
+	public static function typeFunctionalityValues(): array
+	{
+		return [
+			self::TYPE_REGULAR,
+			self::TYPE_GREETING,
+			self::TYPE_MARKETING,
+			self::TYPE_NPS,
+		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
+	}
 
 	/**
 	 * Find bot by id
@@ -29,12 +88,11 @@ class Bots extends Service
 		if (!is_int($bot_id) || $bot_id <= 0) {
 			throw new \InvalidArgumentException('Bot ID must be positive integer');
 		}
-		$result = $this->filter(['id' => [$bot_id]], $with)->fetchAll()->first();
-		return $result ?: null;
+		return parent::find($bot_id, $with);
 	}
 
 	/**
-	 * Run bot tasks queue
+	 * Run bot (single) or bot tasks queue (group, max 100)
 	 * @param array<int, array{bot_id:int, entity_id:int, entity_type:string}>|int $tasks_or_bot_id
 	 * @param int|null $entity_id
 	 * @param string $entity_type
@@ -42,22 +100,29 @@ class Bots extends Service
 	public function run($tasks_or_bot_id, ?int $entity_id = null, string $entity_type = 'leads'): bool
 	{
 		if (is_int($tasks_or_bot_id)) {
-			if (is_null($entity_id)) {
+			if (is_null($entity_id) || $entity_id <= 0) {
 				throw new \InvalidArgumentException('Entity ID must be positive integer');
 			}
-			$tasks = [[
+			$this->validateRunTask([
 				'bot_id' => $tasks_or_bot_id,
 				'entity_id' => $entity_id,
-				'entity_type' => $entity_type
-			]];
+				'entity_type' => $entity_type,
+			]);
+
+			$query = $this->instance->query('POST', $this->api_path.'/'.$tasks_or_bot_id.'/run');
+			$query->setJsonData([
+				'entity_id' => $entity_id,
+				'entity_type' => $entity_type,
+			]);
+			$query->execute();
+			return $query->response->getCode() === 202;
 		}
-		else if (is_array($tasks_or_bot_id)) {
-			$tasks = $tasks_or_bot_id;
-		}
-		else {
+
+		if (!is_array($tasks_or_bot_id)) {
 			throw new \InvalidArgumentException('Bots run expects tasks array or bot_id integer');
 		}
 
+		$tasks = $tasks_or_bot_id;
 		if (empty($tasks)) {
 			throw new \InvalidArgumentException('Bots run payload can not be empty');
 		}
@@ -93,7 +158,7 @@ class Bots extends Service
 			throw new \InvalidArgumentException('Entity ID must be positive integer');
 		}
 		if (!in_array($entity_type, $this->allowed_stop_entity_types, true)) {
-			throw new \InvalidArgumentException('Bots stop entity_type must be one of: leads, customers');
+			throw new \InvalidArgumentException('Bots stop entity_type must be one of: leads');
 		}
 
 		$query = $this->instance->query('POST', $this->api_path.'/'.$bot_id.'/stop');

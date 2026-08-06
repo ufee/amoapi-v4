@@ -4,8 +4,10 @@
 
 ```php
 $elements = $api->catalogElements($catalog_id)->get();
+$elements = $api->catalogElements($catalog_id)->withAll()->get();
 // или через модель списка
 $elements = $catalog->elements()->get();
+$elements = $catalog->elements()->withAll()->get();
 
 $paginate = $catalog->elements()->paginate();
 $paginate = $catalog->elements()->filter(['id' => [525439, 525440]]);
@@ -16,6 +18,7 @@ $element = $catalog->elements()->find($element_id);
 $element = $api->catalogElement($catalog_id, $element_id);
 // элемент списка счетов со ссылкой на печатную форму
 $element = $api->catalogElement($catalog_id, $element_id, ['invoice_link']);
+$element = $api->catalogElement($catalog_id, $element_id, \Ufee\AmoV4\Services\CatalogElements::withValues());
 
 // создание элемента
 $element = $catalog->createElement(['name' => 'Телефон']);

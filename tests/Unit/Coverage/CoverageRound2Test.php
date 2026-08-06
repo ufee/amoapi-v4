@@ -26,33 +26,23 @@ class CoverageRound2Test extends TestCase
 	{
 		$api = $this->makeStubApiClient();
 
-		$api->pushResponse(200, [
-			'_page' => 1,
-			'_links' => (object) [],
-			'_embedded' => (object) [
-				'items' => [(object) ['id' => 5, 'name' => 'Bot']],
-			],
-		]);
-		$api->pushResponse(204, '');
+		$api->pushResponse(200, (object) ['id' => 5, 'name' => 'Bot']);
 		$bot = $api->bots()->find(5);
 		$this->assertSame(5, $bot->id);
+		$this->assertStringEndsWith('/bots/5', $api->lastQuery->url);
 
-		$api->pushResponse(200, [
-			'_page' => 1,
-			'_links' => (object) [],
-			'_embedded' => (object) ['items' => []],
-		]);
-		// пустая страница: fetchAll не запрашивает следующую
+		$api->pushResponse(204, '');
 		$this->assertNull($api->bots()->find(99));
 
 		$api->pushResponse(202, '');
 		$this->assertTrue($api->bots()->run(5, 10, 'leads'));
-		$this->assertStringEndsWith('/bots/run', $api->lastQuery->url);
+		$this->assertStringEndsWith('/bots/5/run', $api->lastQuery->url);
 
 		$api->pushResponse(202, '');
 		$this->assertTrue($api->bots()->run([
 			['bot_id' => 5, 'entity_id' => 11, 'entity_type' => 'contacts'],
 		]));
+		$this->assertStringEndsWith('/bots/run', $api->lastQuery->url);
 
 		$api->pushResponse(202, '');
 		$this->assertTrue($api->bots()->stop(5, 10, 'leads'));

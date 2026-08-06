@@ -17,6 +17,8 @@ $users = $api->users()->with([
     \Ufee\AmoV4\Services\Users::USER_RANK,
     \Ufee\AmoV4\Services\Users::PHONE_NUMBER,
 ])->get();
+$users = $api->users()->withAll()->get();
+$users = $api->users()->with(\Ufee\AmoV4\Services\Users::withValues())->get();
 
 // группа пользователя
 $group = $user->group();

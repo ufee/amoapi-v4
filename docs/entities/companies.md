@@ -11,6 +11,8 @@ $companies = $api->companies()->with([
     \Ufee\AmoV4\Services\Companies::CUSTOMERS,
     \Ufee\AmoV4\Services\Companies::CATALOG_ELEMENTS,
 ])->get();
+$companies = $api->companies()->withAll()->get();
+$companies = $api->companies()->with(\Ufee\AmoV4\Services\Companies::withValues())->get();
 
 $companies = $api->companies()->searchByName('Ромашка', 1);
 $companies = $api->companies()->searchByPhone('+79001234567', 1);
