@@ -7,6 +7,11 @@ use Ufee\AmoV4\ApiClient;
 
 class PipelineStatuses extends Service
 {
+	/**
+	 * Добавляет в ответ описания статуса
+	 */
+	public const DESCRIPTIONS = 'descriptions';
+
 	protected $api_path = '/api/v4/leads/pipelines/{pipeline_id}/statuses';
 	protected $entity_key = 'statuses';
 	
@@ -27,6 +32,26 @@ class PipelineStatuses extends Service
 		$this->client_id = $client->client_id;
 		$this->api_path = str_replace('{pipeline_id}', $pipeline_id, $this->api_path);
 		$this->_boot();
+	}
+
+	/**
+	 * Все with-параметры для обогащения ответа
+	 * @return string[]
+	 */
+	public static function withValues(): array
+	{
+		return [
+			self::DESCRIPTIONS,
+		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
 	}
 	
     /**

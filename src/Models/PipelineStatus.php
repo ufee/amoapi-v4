@@ -26,11 +26,13 @@ class PipelineStatus extends Model
 	{
 		$pipeline = $this->service->instance->cache->pipeline($this->pipeline_id);
 
-		return $pipeline->statuses()
+		$status = $pipeline->statuses()
 			->find(function ($status) {
 				return $status->id != self::STATUS_LOST && $status->sort > $this->sort;
 			})
 			->first();
+
+		return $status ? $status : null;
 	}
 
 	/**
@@ -41,11 +43,13 @@ class PipelineStatus extends Model
 	{
 		$pipeline = $this->service->instance->cache->pipeline($this->pipeline_id);
 
-		return $pipeline->statuses()
+		$status = $pipeline->statuses()
 			->find(function ($status) {
 				return !in_array($status->id, [self::STATUS_WON, self::STATUS_LOST]) && $status->sort < $this->sort;
 			})
 			->last();
+
+		return $status ? $status : null;
 	}
 
 	/**

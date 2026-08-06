@@ -33,4 +33,26 @@ class Contacts extends Service
 
 	protected $entity_model = '\Ufee\AmoV4\Models\Contact';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\Contacts';
+
+	/**
+	 * Все with-параметры для обогащения ответа
+	 * @return string[]
+	 */
+	public static function withValues(): array
+	{
+		return [
+			self::CATALOG_ELEMENTS,
+			self::LEADS,
+			self::CUSTOMERS,
+		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
+	}
 }

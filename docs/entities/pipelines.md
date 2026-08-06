@@ -28,6 +28,7 @@ $pipeline->delete();
 ```php
 $statuses = $pipeline->statuses(); // collection
 $statuses = $api->pipelineStatuses($pipeline_id)->with(['descriptions'])->get();
+$statuses = $api->pipelineStatuses($pipeline_id)->withAll()->get();
 $status = $api->pipelineStatuses($pipeline_id)->find($status_id, ['descriptions']);
 
 // или новый этап

@@ -10,6 +10,8 @@ $contacts = $api->contacts()->with([
     \Ufee\AmoV4\Services\Contacts::CUSTOMERS,
     \Ufee\AmoV4\Services\Contacts::CATALOG_ELEMENTS,
 ])->get();
+$contacts = $api->contacts()->withAll()->get();
+$contacts = $api->contacts()->with(\Ufee\AmoV4\Services\Contacts::withValues())->get();
 
 $contacts = $api->contacts()->searchByName('Иван', 1);
 $contacts = $api->contacts()->searchByPhone('+79001234567', 1);

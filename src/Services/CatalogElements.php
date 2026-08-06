@@ -41,6 +41,26 @@ class CatalogElements extends Service
 	}
 
 	/**
+	 * Все with-параметры для обогащения ответа
+	 * @return string[]
+	 */
+	public static function withValues(): array
+	{
+		return [
+			self::INVOICE_LINK,
+		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
+	}
+
+	/**
 	 * Args for custom fields API / cache
 	 * @return array
 	 */

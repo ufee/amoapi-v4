@@ -6,6 +6,9 @@
 $account = $api->account()->get();
 // или
 $account = $api->account;
+// все with-параметры
+$account = $api->account()->withAll()->get();
+$account = $api->account()->with(\Ufee\AmoV4\Services\Account::withValues())->get();
 // или из кеша
 $account = $api->cache->account();
 

@@ -50,4 +50,29 @@ class Users extends Service
 	{
 		$this->query_args['with'] = implode(',', [self::UUID, self::AMOJO_ID, self::PHONE_NUMBER]);
 	}
+
+	/**
+	 * Все with-параметры для обогащения ответа
+	 * @return string[]
+	 */
+	public static function withValues(): array
+	{
+		return [
+			self::ROLE,
+			self::GROUP,
+			self::UUID,
+			self::AMOJO_ID,
+			self::USER_RANK,
+			self::PHONE_NUMBER,
+		];
+	}
+
+	/**
+	 * Установить все with-параметры обогащения ответа
+	 * @return static
+	 */
+	public function withAll()
+	{
+		return $this->with(static::withValues());
+	}
 }
