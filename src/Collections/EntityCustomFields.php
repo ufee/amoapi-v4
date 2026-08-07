@@ -23,7 +23,7 @@ class EntityCustomFields
 		'streetaddress' => 'Ufee\AmoV4\Models\EntityCfields\StreetAddressField',
 		'smart_address' => 'Ufee\AmoV4\Models\EntityCfields\SmartAddressField',
 		'birthday' => 'Ufee\AmoV4\Models\EntityCfields\DateField',
-		'legal_entity' => 'Ufee\AmoV4\Models\EntityCfields\JurField',
+		'legal_entity' => 'Ufee\AmoV4\Models\EntityCfields\LegalEntityField',
 		// 'items'
 		'category' => 'Ufee\AmoV4\Models\EntityCfields\SelectField',
 		'date_time' => 'Ufee\AmoV4\Models\EntityCfields\DateTimeField',

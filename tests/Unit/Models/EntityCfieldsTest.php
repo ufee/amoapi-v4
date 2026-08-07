@@ -10,7 +10,7 @@ use Ufee\AmoV4\Models\EntityCfields\DateTimeField;
 use Ufee\AmoV4\Models\EntityCfields\EntityField;
 use Ufee\AmoV4\Models\EntityCfields\FileField;
 use Ufee\AmoV4\Models\File;
-use Ufee\AmoV4\Models\EntityCfields\JurField;
+use Ufee\AmoV4\Models\EntityCfields\LegalEntityField;
 use Ufee\AmoV4\Models\EntityCfields\MultiSelectField;
 use Ufee\AmoV4\Models\EntityCfields\MultiTextField;
 use Ufee\AmoV4\Enums\CustomFields\EmailEnum;
@@ -44,7 +44,7 @@ class EntityCfieldsTest extends TestCase
 			$this->cf(11, 'Radio', 'RAD', 'radiobutton', 'yes'),
 			$this->cf(12, 'Street', 'STR', 'streetaddress', 'Main'),
 			$this->cf(13, 'Smart', 'SMART', 'smart_address', 'City'),
-			$this->cf(14, 'Jur', 'JUR', 'legal_entity', 'OOO'),
+			$this->cf(14, 'Legal', 'LEGAL', 'legal_entity', 'OOO'),
 			$this->cf(15, 'File', 'FILE', 'file', 'file-uuid'),
 			$this->cf(16, 'Phone', 'PHONE', 'multitext', '+7900'),
 			$this->cf(17, 'Area', 'AREA', 'textarea', "line1\nline2"),
@@ -67,7 +67,7 @@ class EntityCfieldsTest extends TestCase
 		$this->assertInstanceOf(RadioButtonField::class, $model->cf(11));
 		$this->assertInstanceOf(StreetAddressField::class, $model->cf(12));
 		$this->assertInstanceOf(SmartAddressField::class, $model->cf(13));
-		$this->assertInstanceOf(JurField::class, $model->cf(14));
+		$this->assertInstanceOf(LegalEntityField::class, $model->cf(14));
 		$this->assertInstanceOf(FileField::class, $model->cf(15));
 		$this->assertInstanceOf(MultiTextField::class, $model->cf(16));
 		$this->assertInstanceOf(TextField::class, $model->cf(17));
@@ -458,12 +458,12 @@ class EntityCfieldsTest extends TestCase
 	public function testLegalEntitySetValueAndHelpers(): void
 	{
 		$model = $this->makeContactWithFields([
-			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
 		]);
 
-		/** @var JurField $jur */
-		$jur = $model->cf(14);
-		$jur->setValue([
+		/** @var LegalEntityField $legal */
+		$legal = $model->cf(14);
+		$legal->setValue([
 			'name' => 'ООО Ромашка',
 			'entity_type' => LegalEntityTypeEnum::LEGAL,
 			'vat_id' => '7701234567',
@@ -472,29 +472,29 @@ class EntityCfieldsTest extends TestCase
 			'external_uid' => 'ext-1',
 		]);
 
-		$this->assertSame('ООО Ромашка', $jur->getName());
-		$this->assertSame(LegalEntityTypeEnum::LEGAL, $jur->getEntityType());
-		$this->assertSame('7701234567', $jur->getVatId());
-		$this->assertSame('770101001', $jur->getKpp());
-		$this->assertSame('Москва', $jur->getAddress());
-		$this->assertSame('ext-1', $jur->getExternalUid());
+		$this->assertSame('ООО Ромашка', $legal->getName());
+		$this->assertSame(LegalEntityTypeEnum::LEGAL, $legal->getEntityType());
+		$this->assertSame('7701234567', $legal->getVatId());
+		$this->assertSame('770101001', $legal->getKpp());
+		$this->assertSame('Москва', $legal->getAddress());
+		$this->assertSame('ext-1', $legal->getExternalUid());
 
 		$value = $model->getChangedRawData()->custom_fields_values[0]->values[0]->value;
 		$this->assertSame('ООО Ромашка', $value->name);
 		$this->assertSame(2, $value->entity_type);
 
-		$jur->setName('ООО Ромашка')
+		$legal->setName('ООО Ромашка')
 			->setDirector('Иванов')
 			->setBankCode('044525225');
-		$this->assertSame('Иванов', $jur->getDirector());
-		$this->assertSame('044525225', $jur->getBankCode());
-		$this->assertArrayHasKey('vat_id', $jur->toArray());
+		$this->assertSame('Иванов', $legal->getDirector());
+		$this->assertSame('044525225', $legal->getBankCode());
+		$this->assertArrayHasKey('vat_id', $legal->toArray());
 	}
 
 	public function testLegalEntityRequiresName(): void
 	{
 		$model = $this->makeContactWithFields([
-			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
 		]);
 
 		$this->expectException(\InvalidArgumentException::class);
@@ -505,7 +505,7 @@ class EntityCfieldsTest extends TestCase
 	public function testLegalEntityRejectsUnknownEntityType(): void
 	{
 		$model = $this->makeContactWithFields([
-			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
 		]);
 
 		$this->expectException(\InvalidArgumentException::class);
@@ -519,7 +519,7 @@ class EntityCfieldsTest extends TestCase
 	public function testLegalEntityFluentRequiresNameFirst(): void
 	{
 		$model = $this->makeContactWithFields([
-			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
 		]);
 
 		$this->expectException(\InvalidArgumentException::class);

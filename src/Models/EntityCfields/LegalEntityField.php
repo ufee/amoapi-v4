@@ -8,7 +8,7 @@ namespace Ufee\AmoV4\Models\EntityCfields;
 
 use Ufee\AmoV4\Enums\CustomFields\LegalEntityTypeEnum;
 
-class JurField extends EntityField
+class LegalEntityField extends EntityField
 {
 	/** @var list<string> */
 	private const KEYS = [
