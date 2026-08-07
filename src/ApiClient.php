@@ -38,6 +38,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Bots bots(...$args)
  * @method \Ufee\AmoV4\Services\Sources sources(...$args)
  * @method \Ufee\AmoV4\Services\Subscriptions subscriptions(...$args)
+ * @method \Ufee\AmoV4\Services\Talks talks(...$args)
  * @method \Ufee\AmoV4\Services\Files files(...$args)
  */
 class ApiClient
@@ -66,6 +67,7 @@ class ApiClient
 		'bots',
 		'sources',
 		'subscriptions',
+		'talks',
 		'files'
 	];
 	protected $_params = [

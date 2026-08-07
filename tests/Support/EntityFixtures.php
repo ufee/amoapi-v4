@@ -203,6 +203,14 @@ final class EntityFixtures
 				'model' => Models\Subscription::class,
 				'collection' => Collections\Subscriptions::class,
 			],
+			'talks' => [
+				'method' => 'talks',
+				'args' => [],
+				'api_path' => '/api/v4/talks',
+				'entity_key' => 'talks',
+				'model' => Models\Talk::class,
+				'collection' => Collections\Talks::class,
+			],
 			'files' => [
 				'method' => 'files',
 				'args' => [],

@@ -44,4 +44,27 @@ $installed = $widget->install([
 $bool = $api->widgets()->uninstall('amo_asterisk');
 // или через модель
 $bool = $widget->uninstall();
+
+// подтверждение блока виджета в Salesbot / Marketingbot
+// из webhook удобнее через return_url
+$is_continued = $api->widgets()->continueFromUrl(
+    $hook['return_url'], // https://.../api/v4/{salesbot|marketingbot}/{bot_id}/continue/{continue_id}
+    ['status' => 'success'],
+    [ // execute_handlers (опционально, макс. 10)
+        [
+            'handler' => \Ufee\AmoV4\Services\Widgets::HANDLER_SHOW,
+            'params' => [
+                'type' => 'text',
+                'value' => 'Готово',
+            ],
+        ],
+    ]
+);
+
+// или вручную: разобрать URL / вызвать continueBot
+[$bot_type, $bot_id, $continue_id] = \Ufee\AmoV4\Services\Widgets::parseContinueUrl($hook['return_url']);
+// ['marketingbot', 321, 123]
+$is_continued = $api->widgets()->continueBot($bot_type, $bot_id, $continue_id, ['status' => 'success']);
 ```
+
+Константы: `Widgets::botTypeValues()`, `Widgets::handlerValues()`.
