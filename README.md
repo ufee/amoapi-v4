@@ -88,4 +88,5 @@ foreach ($leads as $lead) {
 | [Salesbot](docs/entities/bots.md) | bots |
 | [Подписчики сущности](docs/entities/subscriptions.md) | subscriptions |
 | [Источники](docs/entities/sources.md) | sources |
+| [Беседы](docs/entities/talks.md) | talks |
 | [Файлы (Drive API)](docs/entities/files.md) | files |

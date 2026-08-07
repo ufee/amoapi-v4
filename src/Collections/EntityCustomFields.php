@@ -12,19 +12,29 @@ class EntityCustomFields
     const FIELD_CLASSES = [
 		'text' => 'Ufee\AmoV4\Models\EntityCfields\TextField',
 		'numeric' => 'Ufee\AmoV4\Models\EntityCfields\NumericField',
-		'price' => 'Ufee\AmoV4\Models\EntityCfields\NumericField',
 		'checkbox' => 'Ufee\AmoV4\Models\EntityCfields\CheckboxField',
 		'select' => 'Ufee\AmoV4\Models\EntityCfields\SelectField',
 		'multiselect' => 'Ufee\AmoV4\Models\EntityCfields\MultiSelectField',
 		'date' => 'Ufee\AmoV4\Models\EntityCfields\DateField',
-		'birthday' => 'Ufee\AmoV4\Models\EntityCfields\DateField',
-		'date_time' => 'Ufee\AmoV4\Models\EntityCfields\DateTimeField',
 		'url' => 'Ufee\AmoV4\Models\EntityCfields\UrlField',
+		'multitext' => 'Ufee\AmoV4\Models\EntityCfields\MultiTextField',
+		'textarea' => 'Ufee\AmoV4\Models\EntityCfields\TextField',
 		'radiobutton' => 'Ufee\AmoV4\Models\EntityCfields\RadioButtonField',
 		'streetaddress' => 'Ufee\AmoV4\Models\EntityCfields\StreetAddressField',
 		'smart_address' => 'Ufee\AmoV4\Models\EntityCfields\SmartAddressField',
-		'legal_entity' => 'Ufee\AmoV4\Models\EntityCfields\JurField',
-		'file' => 'Ufee\AmoV4\Models\EntityCfields\FileField'
+		'birthday' => 'Ufee\AmoV4\Models\EntityCfields\DateField',
+		'legal_entity' => 'Ufee\AmoV4\Models\EntityCfields\LegalEntityField',
+		// 'items'
+		'category' => 'Ufee\AmoV4\Models\EntityCfields\SelectField',
+		'date_time' => 'Ufee\AmoV4\Models\EntityCfields\DateTimeField',
+		'price' => 'Ufee\AmoV4\Models\EntityCfields\NumericField',
+		'tracking_data' => 'Ufee\AmoV4\Models\EntityCfields\TextField',
+		// 'linked_entity'
+		'monetary' => 'Ufee\AmoV4\Models\EntityCfields\NumericField',
+		// 'chained_list'
+		'file' => 'Ufee\AmoV4\Models\EntityCfields\FileField',
+		// 'payer'
+		// 'supplier'
 	];
 	protected $collection;
 	protected $model;
@@ -38,16 +48,16 @@ class EntityCustomFields
 	{
 		$this->collection = new Collection();
 		$this->model = $model;
-		
+
 		foreach ($entity_cfields as $cfield) {
-			
+
 			$cf_class = static::FIELD_CLASSES[$cfield->field_type] ?? 'Ufee\AmoV4\Models\EntityCfields\EntityField';
 			$this->collection->push(
 				new $cf_class($cfield, $model), $cfield->field_id
 			);
 		}
 	}
-	
+
     /**
      * Get all cfields
 	 * @return Collection
@@ -56,8 +66,8 @@ class EntityCustomFields
     {
 		return $this->collection;
     }
-    
-	
+
+
     /**
      * Get cf by name
      * @param string $name
@@ -67,7 +77,7 @@ class EntityCustomFields
     {
 		return $this->byField('field_name', $cf_name);
     }
-    
+
     /**
      * Get cf by id
      * @param integer $cf_id
@@ -77,7 +87,7 @@ class EntityCustomFields
     {
 		return $this->byField('field_id', $cf_id);
     }
-	
+
     /**
      * Get cf by code
      * @param string $cf_code
@@ -87,7 +97,7 @@ class EntityCustomFields
     {
 		return $this->byField('field_code', $cf_code);
     }
-	
+
     /**
      * Get cf by type
      * @param string $cf_type
@@ -97,7 +107,7 @@ class EntityCustomFields
     {
 		return $this->byField('field_type', $cf_type);
     }
-	
+
     /**
      * Get cf by field
      * @param string $field
@@ -110,7 +120,7 @@ class EntityCustomFields
 			$service = $this->model->service;
 			$accountCfs = $service->instance->cache->customFields(...$service->customFieldsArgs());
 			$field_key = str_replace('field_', '', $field);
-			
+
 			if ($acf = $accountCfs->find($field_key, $val)->first()) {
 				$cfield = (object)[
 					'field_id' => $acf->id,

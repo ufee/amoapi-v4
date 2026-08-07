@@ -28,6 +28,7 @@
 | [Salesbot](entities/bots.md) | bots |
 | [Подписчики сущности](entities/subscriptions.md) | subscriptions |
 | [Источники](entities/sources.md) | sources |
+| [Беседы](entities/talks.md) | talks |
 | [Файлы (Drive API)](entities/files.md) | files |
 
 ## Сервисы
@@ -56,6 +57,7 @@ $api->widgets();
 $api->bots();
 $api->subscriptions($entity_type, $entity_id); // entity_type: leads|customers
 $api->sources();
+$api->talks();
 $api->files();
 ```
 

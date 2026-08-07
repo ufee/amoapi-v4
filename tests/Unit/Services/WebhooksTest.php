@@ -19,6 +19,18 @@ class WebhooksTest extends TestCase
 		$this->assertSame('webhooks', $service->entity_key);
 	}
 
+	public function testEventConstants(): void
+	{
+		$events = Webhooks::eventValues();
+
+		$this->assertContains(Webhooks::EVENT_ADD_LEAD, $events);
+		$this->assertContains(Webhooks::EVENT_UPDATE_TALK, $events);
+		$this->assertContains(Webhooks::EVENT_ADD_MESSAGE, $events);
+		$this->assertContains(Webhooks::EVENT_ADD_CHAT_TEMPLATE_REVIEW, $events);
+		$this->assertCount(33, $events);
+		$this->assertSame($events, array_unique($events));
+	}
+
 	public function testCreateModelHasRequiredFields(): void
 	{
 		$webhook = $this->service('webhooks')->create([
