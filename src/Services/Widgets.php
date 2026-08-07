@@ -29,7 +29,7 @@ class Widgets extends Service
 
 	protected $api_path = '/api/v4/widgets';
 	protected $entity_key = 'widgets';
-	
+
 	protected $entity_model = '\Ufee\AmoV4\Models\Widget';
 	protected $entity_collection = '\Ufee\AmoV4\Collections\Widgets';
 
@@ -68,11 +68,11 @@ class Widgets extends Service
 		$query = $this->instance->query('POST', $this->api_path.'/'.$widget_code);
 		$query->setJsonData($settings);
 		$query->execute();
-		
+
 		$result = $query->response->validated();
 		return new Models\Widget((array)$result, $this);
 	}
-	
+
     /**
      * Uninstall widget
 	 * @param string $widget_code
@@ -126,21 +126,21 @@ class Widgets extends Service
 	 *
 	 * @param string $bot_type salesbot|marketingbot
 	 * @param int $bot_id
-	 * @param int|string $continue_id
+	 * @param int $continue_id
 	 * @param array $data данные для виджета (необязательно)
 	 * @param array $execute_handlers хендлеры show|goto, максимум 10 (необязательно)
 	 * @return bool
 	 */
-	public function continueBot(string $bot_type, $bot_id, $continue_id, array $data = [], array $execute_handlers = []): bool
+	public function continueBot(string $bot_type, int $bot_id, int $continue_id, array $data = [], array $execute_handlers = []): bool
 	{
 		if (!in_array($bot_type, static::botTypeValues(), true)) {
-			throw new \InvalidArgumentException('Bot type must be one of: salesbot, marketingbot');
+			throw new \InvalidArgumentException('Bot type must be one of: ' . implode(', ', static::botTypeValues()));
 		}
 		if (!is_int($bot_id) || $bot_id <= 0) {
-			throw new \InvalidArgumentException('Bot ID must be positive integer');
+			throw new \InvalidArgumentException('Bot ID must be positive integer, got ' . $bot_id);
 		}
-		if ((!is_int($continue_id) && !is_string($continue_id)) || $continue_id === '' || $continue_id === 0) {
-			throw new \InvalidArgumentException('Continue ID must be non-empty integer or string');
+		if (!is_int($continue_id) || $continue_id <= 0) {
+			throw new \InvalidArgumentException('Continue ID must be positive integer, got ' . $continue_id);
 		}
 		if (count($execute_handlers) > 10) {
 			throw new \InvalidArgumentException('execute_handlers supports maximum 10 handlers');
@@ -158,11 +158,7 @@ class Widgets extends Service
 			$payload['execute_handlers'] = $execute_handlers;
 		}
 
-		$query = $this->instance->query(
-			'POST',
-			'/api/v4/' . $bot_type . '/' . $bot_id . '/continue/' . $continue_id
-		);
-		// Content-Type: application/json обязателен по доке — всегда шлём JSON-объект
+		$query = $this->instance->query('POST', "/api/v4/{$bot_type}/{$bot_id}/continue/{$continue_id}");
 		$query->setJsonData($payload === [] ? new \stdClass() : $payload);
 		$query->execute();
 		return $query->response->getCode() === 202;
