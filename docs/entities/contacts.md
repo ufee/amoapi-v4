@@ -21,8 +21,10 @@ $contacts = $api->contacts()->searchByCustomField('Москва', 'Город', 
 $contact = $api->contacts()->find($contact_id);
 $contact = $api->contacts()->create(['name' => 'Иван']);
 
-$contact->cf('Email')->setValue('a@b.ru');
-$contact->cf('Phone')->setValue('+79001234567');
+$contact->cf()->byCode(\Ufee\AmoV4\Enums\CustomFields\EmailEnum::CODE)
+    ->setValue('a@b.ru', \Ufee\AmoV4\Enums\CustomFields\EmailEnum::WORK);
+$contact->cf()->byCode(\Ufee\AmoV4\Enums\CustomFields\PhoneEnum::CODE)
+    ->setValue('+79001234567', \Ufee\AmoV4\Enums\CustomFields\PhoneEnum::MOB);
 $contact->save();
 
 $user = $contact->responsibleUser();

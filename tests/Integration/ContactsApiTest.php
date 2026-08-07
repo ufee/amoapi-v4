@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ufee\AmoV4\Tests\Integration;
 
 use Ufee\AmoV4\Models\Contact;
+use Ufee\AmoV4\Enums\CustomFields\EmailEnum;
+use Ufee\AmoV4\Enums\CustomFields\PhoneEnum;
 use Ufee\AmoV4\Services\Contacts;
 
 /**
@@ -25,8 +27,8 @@ class ContactsApiTest extends IntegrationTestCase
 		$contact = $contacts->create(['name' => $name]);
 		$this->assertInstanceOf(Contact::class, $contact);
 
-		$contact->cf()->byCode('EMAIL')->setValue($email);
-		$contact->cf()->byCode('PHONE')->setValue($phone);
+		$contact->cf()->byCode(EmailEnum::CODE)->setValue($email);
+		$contact->cf()->byCode(PhoneEnum::CODE)->setValue($phone);
 		$contact->attachTag('amoapi-v4-itest');
 
 		$this->assertTrue($contact->save(), 'Не удалось создать контакт');
@@ -37,6 +39,10 @@ class ContactsApiTest extends IntegrationTestCase
 		$this->assertInstanceOf(Contact::class, $found);
 		$this->assertSame((int) $contact->id, (int) $found->id);
 		$this->assertSame($name, $found->name);
+		$this->assertSame($email, $found->cf()->byCode(EmailEnum::CODE)->getValue());
+		$this->assertSame(EmailEnum::WORK, $found->cf()->byCode(EmailEnum::CODE)->getEnumCode());
+		$this->assertSame($phone, $found->cf()->byCode(PhoneEnum::CODE)->getValue());
+		$this->assertSame(PhoneEnum::WORK, $found->cf()->byCode(PhoneEnum::CODE)->getEnumCode());
 
 		$updatedName = $name . ' updated';
 		$found->name = $updatedName;

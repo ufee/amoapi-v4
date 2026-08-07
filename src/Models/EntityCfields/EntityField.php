@@ -21,6 +21,7 @@ class EntityField
 	public const TYPE_DATE = 'date';
 	/** Ссылка */
 	public const TYPE_URL = 'url';
+	/** Мультитекст */
 	public const TYPE_MULTITEXT = 'multitext';
 	/** Текстовая область */
 	public const TYPE_TEXTAREA = 'textarea';
@@ -34,9 +35,8 @@ class EntityField
 	public const TYPE_BIRTHDAY = 'birthday';
 	/** Юр. лицо */
 	public const TYPE_LEGAL_ENTITY = 'legal_entity';
-	/** Предметы */
+	/** Предметы (только в списке Счета-покупки) */
 	public const TYPE_ITEMS = 'items';
-	public const TYPE_ORG_LEGAL_NAME = 'org_legal_name';
 	/** Категория */
 	public const TYPE_CATEGORY = 'category';
 	/** Дата и время */

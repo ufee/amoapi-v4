@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ufee\AmoV4\Tests\Integration;
 
 use Ufee\AmoV4\Models\Company;
+use Ufee\AmoV4\Enums\CustomFields\EmailEnum;
 use Ufee\AmoV4\Services\Companies;
 
 /**
@@ -22,7 +23,7 @@ class CompaniesApiTest extends IntegrationTestCase
 		$this->assertInstanceOf(Companies::class, $companies);
 
 		$company = $companies->create(['name' => $name]);
-		$company->cf()->byCode('EMAIL')->setValue($email);
+		$company->cf()->byCode(EmailEnum::CODE)->setValue($email);
 		$company->attachTag('amoapi-v4-itest');
 		$this->assertTrue($company->save(), 'Не удалось создать компанию');
 		$this->assertNotEmpty($company->id);
@@ -31,6 +32,8 @@ class CompaniesApiTest extends IntegrationTestCase
 		$found = $this->api->companies()->find($company->id);
 		$this->assertInstanceOf(Company::class, $found);
 		$this->assertSame($name, $found->name);
+		$this->assertSame($email, $found->cf()->byCode(EmailEnum::CODE)->getValue());
+		$this->assertSame(EmailEnum::WORK, $found->cf()->byCode(EmailEnum::CODE)->getEnumCode());
 
 		$updated = $name . ' updated';
 		$found->name = $updated;

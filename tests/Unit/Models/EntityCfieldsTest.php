@@ -12,6 +12,11 @@ use Ufee\AmoV4\Models\EntityCfields\FileField;
 use Ufee\AmoV4\Models\File;
 use Ufee\AmoV4\Models\EntityCfields\JurField;
 use Ufee\AmoV4\Models\EntityCfields\MultiSelectField;
+use Ufee\AmoV4\Models\EntityCfields\MultiTextField;
+use Ufee\AmoV4\Enums\CustomFields\EmailEnum;
+use Ufee\AmoV4\Enums\CustomFields\LegalEntityTypeEnum;
+use Ufee\AmoV4\Enums\CustomFields\PhoneEnum;
+use Ufee\AmoV4\Enums\CustomFields\SmartAddressEnum;
 use Ufee\AmoV4\Models\EntityCfields\NumericField;
 use Ufee\AmoV4\Models\EntityCfields\RadioButtonField;
 use Ufee\AmoV4\Models\EntityCfields\SelectField;
@@ -41,7 +46,12 @@ class EntityCfieldsTest extends TestCase
 			$this->cf(13, 'Smart', 'SMART', 'smart_address', 'City'),
 			$this->cf(14, 'Jur', 'JUR', 'legal_entity', 'OOO'),
 			$this->cf(15, 'File', 'FILE', 'file', 'file-uuid'),
-			$this->cf(16, 'Unknown', 'UNK', 'tracking_data', 'track'),
+			$this->cf(16, 'Phone', 'PHONE', 'multitext', '+7900'),
+			$this->cf(17, 'Area', 'AREA', 'textarea', "line1\nline2"),
+			$this->cf(18, 'Track', 'TRACK', 'tracking_data', 'utm'),
+			$this->cf(19, 'Money', 'MONEY', 'monetary', '100.50'),
+			$this->cf(20, 'Cat', 'CAT', 'category', 'Root'),
+			$this->cf(21, 'Unknown', 'UNK', 'items', 'x'),
 		]);
 
 		$this->assertInstanceOf(TextField::class, $model->cf(1));
@@ -59,8 +69,13 @@ class EntityCfieldsTest extends TestCase
 		$this->assertInstanceOf(SmartAddressField::class, $model->cf(13));
 		$this->assertInstanceOf(JurField::class, $model->cf(14));
 		$this->assertInstanceOf(FileField::class, $model->cf(15));
-		$this->assertInstanceOf(EntityField::class, $model->cf(16));
-		$this->assertNotInstanceOf(TextField::class, $model->cf(16));
+		$this->assertInstanceOf(MultiTextField::class, $model->cf(16));
+		$this->assertInstanceOf(TextField::class, $model->cf(17));
+		$this->assertInstanceOf(TextField::class, $model->cf(18));
+		$this->assertInstanceOf(NumericField::class, $model->cf(19));
+		$this->assertInstanceOf(SelectField::class, $model->cf(20));
+		$this->assertInstanceOf(EntityField::class, $model->cf(21));
+		$this->assertNotInstanceOf(TextField::class, $model->cf(21));
 	}
 
 	public function testLookupByNameCodeAndType(): void
@@ -269,6 +284,247 @@ class EntityCfieldsTest extends TestCase
 		$model->cf(1)->setValues(['a', 'b']);
 		$this->assertSame(['a', 'b'], $model->cf(1)->getValues());
 		$this->assertSame('a', $model->cf(1)->getValue());
+	}
+
+	public function testMultiTextValueWithEnumCodeAndId(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Phone', 'PHONE', 'multitext'),
+		]);
+
+		/** @var MultiTextField $phone */
+		$phone = $model->cf(1);
+		$phone->setValue('+79001234567', PhoneEnum::MOB);
+
+		$payload = $model->getChangedRawData();
+		$item = $payload->custom_fields_values[0]->values[0];
+		$this->assertSame('+79001234567', $item->value);
+		$this->assertSame(PhoneEnum::MOB, $item->enum_code);
+		$this->assertFalse(property_exists($item, 'enum_id'));
+		$this->assertSame(PhoneEnum::MOB, $phone->getEnumCode());
+
+		$phone->setValue('+74991234567', 48224);
+		$item = $model->getChangedRawData()->custom_fields_values[0]->values[0];
+		$this->assertSame('+74991234567', $item->value);
+		$this->assertSame(48224, $item->enum_id);
+		$this->assertFalse(property_exists($item, 'enum_code'));
+		$this->assertSame(48224, $phone->getEnum());
+
+		$phone->setValues([
+			['value' => '+7912', 'enum_code' => PhoneEnum::MOB],
+			(object) ['value' => '+7495', 'enum_id' => 11],
+			'plain',
+		]);
+		$phone->addValue('+7800', PhoneEnum::OTHER);
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(4, $values);
+		$this->assertSame('+7912', $values[0]->value);
+		$this->assertSame(PhoneEnum::MOB, $values[0]->enum_code);
+		$this->assertSame('+7495', $values[1]->value);
+		$this->assertSame(11, $values[1]->enum_id);
+		$this->assertSame('plain', $values[2]->value);
+		$this->assertSame(PhoneEnum::WORK, $values[2]->enum_code);
+		$this->assertSame('+7800', $values[3]->value);
+		$this->assertSame(PhoneEnum::OTHER, $values[3]->enum_code);
+		$this->assertSame(['+7912', '+7495', 'plain', '+7800'], $phone->getValues());
+		$this->assertSame([PhoneEnum::MOB, null, PhoneEnum::WORK, PhoneEnum::OTHER], $phone->getEnumCodes());
+		$this->assertSame([null, 11, null, null], $phone->getEnums());
+	}
+
+	public function testMultiTextDefaultsWorkForPhoneAndEmail(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Phone', PhoneEnum::CODE, 'multitext'),
+			$this->cf(2, 'Email', EmailEnum::CODE, 'multitext'),
+			$this->cf(3, 'Other', 'CUSTOM', 'multitext'),
+		]);
+
+		$model->cf(1)->setValue('+7900');
+		$model->cf(2)->setValue('a@b.c');
+		$model->cf(3)->setValue('note');
+
+		$payload = $model->getChangedRawData()->custom_fields_values;
+		$this->assertSame(PhoneEnum::WORK, $payload[0]->values[0]->enum_code);
+		$this->assertSame(EmailEnum::WORK, $payload[1]->values[0]->enum_code);
+		$this->assertFalse(property_exists($payload[2]->values[0], 'enum_code'));
+	}
+
+	public function testMultiTextRejectsUnknownEnumCode(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Phone', PhoneEnum::CODE, 'multitext'),
+			$this->cf(2, 'Email', EmailEnum::CODE, 'multitext'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Unknown phone enum "PRIV"');
+		$model->cf(1)->setValue('+7900', EmailEnum::PRIV);
+	}
+
+	public function testMultiTextRejectsUnknownEmailEnumCode(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(2, 'Email', EmailEnum::CODE, 'multitext'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Unknown email enum "MOB"');
+		$model->cf(2)->setValue('a@b.c', PhoneEnum::MOB);
+	}
+
+	public function testSmartAddressHelpersAndUpsert(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(13, 'Address', 'ADDR', 'smart_address'),
+		]);
+
+		/** @var SmartAddressField $addr */
+		$addr = $model->cf(13);
+		$addr->setAddressLine1('Николоямская улица 28/60')
+			->setCity('Москва')
+			->setState('Москва')
+			->setZip('109004')
+			->setCountry('RU');
+
+		$this->assertSame('Москва', $addr->getCity());
+		$this->assertSame('RU', $addr->getCountry());
+		$this->assertSame('109004', $addr->getZip());
+		$this->assertSame([
+			SmartAddressEnum::ADDRESS_LINE_1 => 'Николоямская улица 28/60',
+			SmartAddressEnum::CITY => 'Москва',
+			SmartAddressEnum::STATE => 'Москва',
+			SmartAddressEnum::ZIP => '109004',
+			SmartAddressEnum::COUNTRY => 'RU',
+		], $addr->toArray());
+
+		$addr->setCity('СПб');
+		$this->assertSame('СПб', $addr->getCity());
+		$this->assertCount(5, $model->getChangedRawData()->custom_fields_values[0]->values);
+		$this->assertSame('СПб', $addr->getValue(SmartAddressEnum::CITY));
+		$this->assertSame('СПб', $addr->getValue(3));
+	}
+
+	public function testSmartAddressSetValuesMapAndApiFormat(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(13, 'Address', 'ADDR', 'smart_address'),
+		]);
+
+		/** @var SmartAddressField $addr */
+		$addr = $model->cf(13);
+		$addr->setValues([
+			SmartAddressEnum::CITY => 'Москва',
+			SmartAddressEnum::COUNTRY => 'RU',
+		]);
+		$this->assertSame(['city' => 'Москва', 'country' => 'RU'], $addr->toArray());
+
+		$addr->setValues([
+			['value' => 'Тверская 1', 'enum_code' => SmartAddressEnum::ADDRESS_LINE_1],
+			(object) ['value' => '109004', 'enum_id' => 5],
+		]);
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(2, $values);
+		$this->assertSame('Тверская 1', $values[0]->value);
+		$this->assertSame(SmartAddressEnum::ADDRESS_LINE_1, $values[0]->enum_code);
+		$this->assertSame('109004', $values[1]->value);
+		$this->assertSame(5, $values[1]->enum_id);
+		$this->assertSame('109004', $addr->getZip());
+		$this->assertSame([SmartAddressEnum::ADDRESS_LINE_1, SmartAddressEnum::ZIP], $addr->getEnumCodes());
+	}
+
+	public function testSmartAddressRequiresEnum(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(13, 'Address', 'ADDR', 'smart_address'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('requires enum_id or enum_code');
+		$model->cf(13)->setValue('Москва');
+	}
+
+	public function testSmartAddressRejectsUnknownEnum(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(13, 'Address', 'ADDR', 'smart_address'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Unknown smart_address enum "street"');
+		$model->cf(13)->setValue('Тверская', 'street');
+	}
+
+	public function testLegalEntitySetValueAndHelpers(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+		]);
+
+		/** @var JurField $jur */
+		$jur = $model->cf(14);
+		$jur->setValue([
+			'name' => 'ООО Ромашка',
+			'entity_type' => LegalEntityTypeEnum::LEGAL,
+			'vat_id' => '7701234567',
+			'kpp' => '770101001',
+			'address' => 'Москва',
+			'external_uid' => 'ext-1',
+		]);
+
+		$this->assertSame('ООО Ромашка', $jur->getName());
+		$this->assertSame(LegalEntityTypeEnum::LEGAL, $jur->getEntityType());
+		$this->assertSame('7701234567', $jur->getVatId());
+		$this->assertSame('770101001', $jur->getKpp());
+		$this->assertSame('Москва', $jur->getAddress());
+		$this->assertSame('ext-1', $jur->getExternalUid());
+
+		$value = $model->getChangedRawData()->custom_fields_values[0]->values[0]->value;
+		$this->assertSame('ООО Ромашка', $value->name);
+		$this->assertSame(2, $value->entity_type);
+
+		$jur->setName('ООО Ромашка')
+			->setDirector('Иванов')
+			->setBankCode('044525225');
+		$this->assertSame('Иванов', $jur->getDirector());
+		$this->assertSame('044525225', $jur->getBankCode());
+		$this->assertArrayHasKey('vat_id', $jur->toArray());
+	}
+
+	public function testLegalEntityRequiresName(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('legal_entity requires name');
+		$model->cf(14)->setValue(['vat_id' => '7701234567']);
+	}
+
+	public function testLegalEntityRejectsUnknownEntityType(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Unknown legal_entity entity_type 9');
+		$model->cf(14)->setValue([
+			'name' => 'Test',
+			'entity_type' => 9,
+		]);
+	}
+
+	public function testLegalEntityFluentRequiresNameFirst(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'JUR', 'legal_entity'),
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('requires name before setting other properties');
+		$model->cf(14)->setVatId('7701234567');
 	}
 
 	/**

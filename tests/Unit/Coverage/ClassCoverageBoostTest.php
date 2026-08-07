@@ -282,6 +282,19 @@ class ClassCoverageBoostTest extends TestCase
 		$this->assertTrue($field->hasValue('New'));
 		$this->assertSame([10, 11], $field->getEnumIds());
 		$this->assertSame(['New', 'Done'], $field->getValues());
+		$this->assertSame(10, $field->findEnumById(10)->id);
+		$this->assertNull($field->findEnumById(99));
+		$this->assertSame(10, $field->findEnumByCode('New')->id);
+		$this->assertNull($field->findEnumByCode('Missing'));
+
+		$withCode = $this->service('customFields', 'contacts')->create([
+			'id' => 2,
+			'name' => 'Phone',
+			'enums' => [
+				(object) ['id' => 5, 'value' => 'MOB', 'code' => 'MOB'],
+			],
+		]);
+		$this->assertSame(5, $withCode->findEnumByCode('MOB')->id);
 	}
 
 	public function testEntitiesCollectionSave(): void
