@@ -168,6 +168,35 @@ class FilesApiStubTest extends TestCase
 		$this->assertStringContainsString('/api/v4/files/u-1/links', $api->lastQuery->url);
 	}
 
+	public function testStats(): void
+	{
+		$api = $this->stubDriveApi();
+		$api->pushResponse(200, [
+			'limit' => 1048576000,
+			'used' => 13320204,
+			'_links' => (object) [
+				'self' => (object) ['href' => 'https://drive-b.amocrm.ru/v1.0/files/stats'],
+			],
+		]);
+
+		$stats = $api->files()->stats();
+		$this->assertSame(1048576000, $stats->limit);
+		$this->assertSame(13320204, $stats->used);
+		$this->assertSame('GET', $api->lastQuery->method);
+		$this->assertSame('/v1.0/files/stats', $api->lastQuery->url);
+		$this->assertSame('drive-b.amocrm.ru', $api->lastQuery->host);
+	}
+
+	public function testStatsRejectsInvalidResponse(): void
+	{
+		$api = $this->stubDriveApi();
+		$api->pushResponse(200, ['_links' => (object) []]);
+
+		$this->expectException(\UnexpectedValueException::class);
+		$this->expectExceptionMessage('limit or used is missing');
+		$api->files()->stats();
+	}
+
 	public function testFileModelSaveDeleteRestoreHelpers(): void
 	{
 		$api = $this->stubDriveApi();

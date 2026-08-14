@@ -69,6 +69,16 @@ $files = $api->files()->search('счёт')->fetchAll();
 $trashed = $api->files()->filter(['deleted' => ''])->fetchAll();
 ```
 
+## Статистика диска
+
+`GET /v1.0/files/stats` на хосте Drive. Значения `limit` и `used` — в байтах.
+
+```php
+$stats = $api->files()->stats();
+echo $stats->limit; // квота аккаунта
+echo $stats->used;  // занято
+```
+
 ## Редактирование
 
 ```php

@@ -293,6 +293,21 @@ class Files extends Service
 	}
 
 	/**
+	 * Get Drive storage stats (limit/used in bytes)
+	 * @return object{limit: int, used: int}
+	 */
+	public function stats()
+	{
+		$query = $this->driveQuery('GET', $this->api_path . '/stats');
+		$query->execute();
+		$result = $query->response->validated();
+		if (!isset($result->limit, $result->used)) {
+			throw new \UnexpectedValueException('Invalid files stats response: limit or used is missing');
+		}
+		return $result;
+	}
+
+	/**
 	 * Update file by UUID
 	 * @param string|array $elem_id
 	 * @param object|array|null $data
