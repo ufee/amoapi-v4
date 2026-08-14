@@ -75,4 +75,24 @@ class FilesApiTest extends IntegrationTestCase
 			$this->markTestSkipped('Drive API недоступен: ' . $e->getMessage());
 		}
 	}
+
+	public function testStats(): void
+	{
+		try {
+			$account = $this->api->account()->get();
+			if (empty($account->drive_url)) {
+				$this->markTestSkipped('В аккаунте нет drive_url');
+			}
+			$this->api->setParam('drive_url', $account->drive_url);
+			$stats = $this->api->files()->stats();
+		} catch (\Throwable $e) {
+			$this->markTestSkipped('Drive stats недоступен: ' . $e->getMessage());
+		}
+
+		$this->assertIsObject($stats);
+		$this->assertIsInt($stats->limit);
+		$this->assertIsInt($stats->used);
+		$this->assertGreaterThan(0, $stats->limit);
+		$this->assertGreaterThanOrEqual(0, $stats->used);
+	}
 }
