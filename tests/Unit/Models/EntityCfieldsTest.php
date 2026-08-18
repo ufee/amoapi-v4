@@ -345,6 +345,38 @@ class EntityCfieldsTest extends TestCase
 		$this->assertSame(['Карта'], $cf->getValues());
 	}
 
+	public function testMultiSelectRawDataOmitsEnumCode(): void
+	{
+		$model = $this->makeContactWithFields([
+			(object) [
+				'field_id' => 1,
+				'field_name' => 'Multi',
+				'field_code' => 'M',
+				'field_type' => 'multiselect',
+				'values' => [
+					(object) ['value' => 'Онлайн', 'enum_id' => 21, 'enum_code' => 'ONLINE'],
+					(object) ['value' => 'СБП', 'enum_id' => 22, 'enum_code' => null],
+				],
+			],
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->addValue('Карта');
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(3, $values);
+		$this->assertSame('Онлайн', $values[0]->value);
+		$this->assertSame(21, $values[0]->enum_id);
+		$this->assertFalse(property_exists($values[0], 'enum_code'));
+		$this->assertSame('СБП', $values[1]->value);
+		$this->assertSame(22, $values[1]->enum_id);
+		$this->assertFalse(property_exists($values[1], 'enum_code'));
+		$this->assertSame('Карта', $values[2]->value);
+		$this->assertFalse(property_exists($values[2], 'enum_id'));
+		$this->assertFalse(property_exists($values[2], 'enum_code'));
+	}
+
 	public function testMultiTextValueWithEnumCodeAndId(): void
 	{
 		$model = $this->makeContactWithFields([
