@@ -114,11 +114,20 @@ class MultiSelectField extends EntityField
 		return $this;
 	}
 
+	/**
+	 * GET includes enum_code on selected options; PATCH schema only accepts
+	 * value / enum_id and rejects enum_code with FieldNotExpected.
+	 * @return object
+	 */
 	public function getRawData()
 	{
+		$values = $this->data->values ?: null;
+		if (is_array($values)) {
+			$values = array_map([$this, 'toApiValue'], $values);
+		}
 		return (object)[
 			'field_id' => $this->data->field_id,
-			'values' => $this->data->values ?: null
+			'values' => $values
 		];
 	}
 
@@ -171,5 +180,21 @@ class MultiSelectField extends EntityField
 		if (!isset($this->data->values) || !is_array($this->data->values)) {
 			$this->data->values = [];
 		}
+	}
+
+	/**
+	 * @param object $item
+	 * @return object
+	 */
+	protected function toApiValue(object $item): object
+	{
+		$row = [];
+		if (property_exists($item, 'value')) {
+			$row['value'] = $item->value;
+		}
+		if (isset($item->enum_id)) {
+			$row['enum_id'] = (int)$item->enum_id;
+		}
+		return (object)$row;
 	}
 }
