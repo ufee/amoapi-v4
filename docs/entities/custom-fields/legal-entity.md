@@ -3,9 +3,12 @@
 [← Поля и группы полей](../custom-fields.md)
 
 Юр. лицо — объект в `value`. Класс `LegalEntityField`. Обязательное поле — `name` (сначала `setName()`, затем остальные сеттеры).  
-`entity_type`: `1` — частное, `2` — юридическое (`LegalEntityTypeEnum`).
+`entity_type`: `1` — частное, `2` — юридическое (`LegalEntityTypeEnum`).  
+Поле может хранить несколько юрлиц: геттеры и fluent-сеттеры работают с первым, остальные — через `setValues()` / `addValue()` / `getValues()` / `toArray()`.
 
 Доступные ключи: `name`, `entity_type`, `vat_id`, `tax_registration_reason_code`, `kpp`, `address`, `real_address`, `bank_code`, `bank_account_number`, `director`, `external_uid`, а также `unp` (BY), `bin` (KZ), `egrpou` / `mfo` (UA/UZ), `oked` (UZ).
+
+Схема записи зависит от страны аккаунта: GET часто возвращает пустые ключи других стран, PATCH их отклоняет (`FieldNotExpected`). SDK при сохранении отправляет только заполненные ключи.
 
 ```php
 use Ufee\AmoV4\Enums\CustomFields\LegalEntityTypeEnum;
@@ -81,9 +84,35 @@ echo $legal->getUnp();
 print_r($legal->toArray());
 print_r($legal->getValue());
 
-// частичное обновление уже заполненного поля
+// несколько юрлиц
+$legal->setValues([
+    [
+        'name' => 'ООО Ромашка',
+        'entity_type' => LegalEntityTypeEnum::LEGAL,
+        'vat_id' => '7701234567',
+    ],
+    [
+        'name' => 'ИП Петров П.П.',
+        'entity_type' => LegalEntityTypeEnum::INDIVIDUAL,
+        'vat_id' => '770123456789',
+    ],
+]);
+$legal->addValue([
+    'name' => 'ООО Лютик',
+    'entity_type' => LegalEntityTypeEnum::LEGAL,
+    'vat_id' => '7707654321',
+]);
+print_r($legal->getValues());
+print_r($legal->toArray());
+
+// частичное обновление: fluent всегда пишет в первое юрлицо (индекс 0)
 $legal->setDirector('Сидоров С.С.')
     ->setBankAccountNumber('40702810900000000002');
+
+// второе и далее — через setValues()
+$items = $legal->toArray();
+$items[1]['director'] = 'Петров П.П.';
+$legal->setValues($items);
 
 // сброс
 $legal->reset();
