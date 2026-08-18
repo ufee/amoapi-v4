@@ -31,36 +31,93 @@ class LegalEntityField extends EntityField
 	];
 
 	/**
-	 * Replace legal_entity value (name is required)
+	 * Replace with one legal entity, or a list of entities
 	 * @param array|object $value
 	 * @return static
 	 */
 	public function setValue($value)
 	{
-		$normalized = $this->normalizeValue($value);
-		if (!isset($normalized->name) || $normalized->name === '' || $normalized->name === null) {
-			throw new \InvalidArgumentException('legal_entity requires name');
+		if ($this->isEntitiesList($value)) {
+			return $this->setValues($value);
 		}
+		$normalized = $this->normalizeValue($value);
+		$this->assertName($normalized);
 		$this->data->values = [(object)['value' => $normalized]];
 		$this->model->cfChanged($this->data->field_id);
 		return $this;
 	}
 
 	/**
-	 * Components as array
-	 * @return array<string, mixed>
+	 * Append legal entity (name is required)
+	 * @param array|object $value
+	 * @return static
+	 */
+	public function addValue($value)
+	{
+		$normalized = $this->normalizeValue($value);
+		$this->assertName($normalized);
+		if (!isset($this->data->values) || !is_array($this->data->values)) {
+			$this->data->values = [];
+		}
+		$this->data->values[] = (object)['value' => $normalized];
+		$this->model->cfChanged($this->data->field_id);
+		return $this;
+	}
+
+	/**
+	 * Replace all legal entities
+	 * @param array $values list of entity arrays/objects
+	 * @return static
+	 */
+	public function setValues(array $values)
+	{
+		$this->data->values = [];
+		foreach ($values as $value) {
+			$normalized = $this->normalizeValue($value);
+			$this->assertName($normalized);
+			$this->data->values[] = (object)['value' => $normalized];
+		}
+		$this->model->cfChanged($this->data->field_id);
+		return $this;
+	}
+
+	/**
+	 * GET returns a union of country-specific keys (often empty). PATCH schema is
+	 * account-country specific and rejects unexpected keys with FieldNotExpected.
+	 * @return object
+	 */
+	public function getRawData()
+	{
+		$raw = parent::getRawData();
+		if (empty($raw->values) || !is_array($raw->values)) {
+			return $raw;
+		}
+		$values = [];
+		foreach ($raw->values as $item) {
+			$obj = $this->asValueObject($item->value ?? null);
+			if ($obj === null) {
+				$values[] = $item;
+				continue;
+			}
+			$values[] = (object)['value' => $this->toApiValue($obj)];
+		}
+		$raw->values = $values;
+		return $raw;
+	}
+
+	/**
+	 * Legal entities as arrays of known keys
+	 * @return list<array<string, mixed>>
 	 */
 	public function toArray(): array
 	{
-		$value = $this->getValueObject();
-		if ($value === null) {
-			return [];
-		}
 		$result = [];
-		foreach (self::KEYS as $key) {
-			if (property_exists($value, $key)) {
-				$result[$key] = $value->{$key};
+		foreach ($this->data->values ?? [] as $item) {
+			$obj = $this->asValueObject($item->value ?? null);
+			if ($obj === null) {
+				continue;
 			}
+			$result[] = $this->valueToArray($obj);
 		}
 		return $result;
 	}
@@ -256,7 +313,8 @@ class LegalEntityField extends EntityField
 	 */
 	protected function setProp(string $key, $propValue)
 	{
-		$value = $this->getValueObject() ?? (object)[];
+		$current = $this->getValueObject();
+		$value = $current ? clone $current : (object)[];
 		$value->{$key} = $propValue;
 		if ($key !== 'name' && (!isset($value->name) || $value->name === '' || $value->name === null)) {
 			throw new \InvalidArgumentException('legal_entity requires name before setting other properties');
@@ -264,7 +322,10 @@ class LegalEntityField extends EntityField
 		if ($key === 'name' && ($propValue === '' || $propValue === null)) {
 			throw new \InvalidArgumentException('legal_entity requires name');
 		}
-		$this->data->values = [(object)['value' => $value]];
+		if (!isset($this->data->values) || !is_array($this->data->values)) {
+			$this->data->values = [];
+		}
+		$this->data->values[0] = (object)['value' => $value];
 		$this->model->cfChanged($this->data->field_id);
 		return $this;
 	}
@@ -274,7 +335,15 @@ class LegalEntityField extends EntityField
 	 */
 	protected function getValueObject(): ?object
 	{
-		$value = $this->getValue();
+		return $this->asValueObject($this->getValue());
+	}
+
+	/**
+	 * @param mixed $value
+	 * @return object|null
+	 */
+	protected function asValueObject($value): ?object
+	{
 		if ($value === null || $value === '') {
 			return null;
 		}
@@ -285,6 +354,49 @@ class LegalEntityField extends EntityField
 			return $value;
 		}
 		return null;
+	}
+
+	/**
+	 * @param object $value
+	 */
+	protected function assertName(object $value): void
+	{
+		if (!isset($value->name) || $value->name === '' || $value->name === null) {
+			throw new \InvalidArgumentException('legal_entity requires name');
+		}
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	protected function isEntitiesList($value): bool
+	{
+		if (!is_array($value) || $value === []) {
+			return false;
+		}
+		$i = 0;
+		foreach ($value as $key => $item) {
+			if ($key !== $i || (!is_array($item) && !is_object($item))) {
+				return false;
+			}
+			$i++;
+		}
+		return true;
+	}
+
+	/**
+	 * @param object $value
+	 * @return array<string, mixed>
+	 */
+	protected function valueToArray(object $value): array
+	{
+		$result = [];
+		foreach (self::KEYS as $key) {
+			if (property_exists($value, $key)) {
+				$result[$key] = $value->{$key};
+			}
+		}
+		return $result;
 	}
 
 	/**
@@ -313,6 +425,30 @@ class LegalEntityField extends EntityField
 					);
 				}
 				$result->entity_type = $type;
+				continue;
+			}
+			$result->{$key} = $prop;
+		}
+		return $result;
+	}
+
+	/**
+	 * @param object $value
+	 * @return object
+	 */
+	protected function toApiValue(object $value): object
+	{
+		$result = (object)[];
+		foreach (self::KEYS as $key) {
+			if (!property_exists($value, $key)) {
+				continue;
+			}
+			$prop = $value->{$key};
+			if ($prop === null || $prop === '') {
+				continue;
+			}
+			if ($key === 'entity_type') {
+				$result->entity_type = (int)$prop;
 				continue;
 			}
 			$result->{$key} = $prop;

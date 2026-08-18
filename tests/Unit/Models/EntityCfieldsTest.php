@@ -286,6 +286,65 @@ class EntityCfieldsTest extends TestCase
 		$this->assertSame('a', $model->cf(1)->getValue());
 	}
 
+	public function testMultiSelectAddAndRemoveValues(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Multi', 'M', 'multiselect', 'a'),
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->addValue('b')->addValues(['c', 'a']);
+		$this->assertSame(['a', 'b', 'c'], $cf->getValues());
+
+		$cf->removeValue('b')->removeValues(['missing', 'c']);
+		$this->assertSame(['a'], $cf->getValues());
+		$cf->removeValue('missing');
+		$this->assertSame(['a'], $cf->getValues());
+	}
+
+	public function testMultiSelectAddAndRemoveEnums(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Multi', 'M', 'multiselect'),
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->setEnums([21, 22]);
+		$cf->addEnum(22)->addEnums([23, 21]);
+		$this->assertSame([21, 22, 23], $cf->getEnums());
+
+		$cf->removeEnum(22)->removeEnums([99, 21]);
+		$this->assertSame([23], $cf->getEnums());
+	}
+
+	public function testMultiSelectAddRemoveOnLoadedItems(): void
+	{
+		$model = $this->makeContactWithFields([
+			(object) [
+				'field_id' => 1,
+				'field_name' => 'Multi',
+				'field_code' => 'M',
+				'field_type' => 'multiselect',
+				'values' => [
+					(object) ['value' => 'Онлайн', 'enum_id' => 21],
+					(object) ['value' => 'СБП', 'enum_id' => 22],
+				],
+			],
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->addValue('Онлайн')->addEnum(22)->addValue('Карта');
+		$this->assertSame(['Онлайн', 'СБП', 'Карта'], $cf->getValues());
+
+		$cf->removeEnum(21);
+		$this->assertSame(['СБП', 'Карта'], $cf->getValues());
+		$cf->removeValue('СБП');
+		$this->assertSame(['Карта'], $cf->getValues());
+	}
+
 	public function testMultiTextValueWithEnumCodeAndId(): void
 	{
 		$model = $this->makeContactWithFields([
@@ -488,7 +547,7 @@ class EntityCfieldsTest extends TestCase
 			->setBankCode('044525225');
 		$this->assertSame('Иванов', $legal->getDirector());
 		$this->assertSame('044525225', $legal->getBankCode());
-		$this->assertArrayHasKey('vat_id', $legal->toArray());
+		$this->assertArrayHasKey('vat_id', $legal->toArray()[0]);
 	}
 
 	public function testLegalEntityRequiresName(): void
@@ -525,6 +584,138 @@ class EntityCfieldsTest extends TestCase
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('requires name before setting other properties');
 		$model->cf(14)->setVatId('7701234567');
+	}
+
+	public function testLegalEntitySaveOmitsEmptyKeysFromGetPayload(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity', (object) [
+				'name' => 'ООО Старое',
+				'entity_type' => 2,
+				'vat_id' => '7701234567',
+				'tax_registration_reason_code' => null,
+				'kpp' => '',
+				'address' => '',
+				'real_address' => null,
+				'bank_code' => '',
+				'bank_account_number' => '',
+				'director' => '',
+				'external_uid' => null,
+				'unp' => '',
+				'bin' => '',
+				'egrpou' => '',
+				'mfo' => '',
+				'oked' => '',
+			]),
+		]);
+
+		/** @var LegalEntityField $legal */
+		$legal = $model->cf(14);
+		$legal->setName('ООО "Какие люди"');
+
+		$value = $model->getChangedRawData()->custom_fields_values[0]->values[0]->value;
+		$this->assertSame('ООО "Какие люди"', $value->name);
+		$this->assertSame(2, $value->entity_type);
+		$this->assertSame('7701234567', $value->vat_id);
+		$this->assertFalse(property_exists($value, 'mfo'));
+		$this->assertFalse(property_exists($value, 'oked'));
+		$this->assertFalse(property_exists($value, 'bank_account_number'));
+		$this->assertFalse(property_exists($value, 'director'));
+		$this->assertFalse(property_exists($value, 'kpp'));
+		$this->assertFalse(property_exists($value, 'unp'));
+	}
+
+	public function testLegalEntitySaveKeepsFilledCountryKeys(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
+		]);
+
+		/** @var LegalEntityField $legal */
+		$legal = $model->cf(14);
+		$legal->setValue([
+			'name' => 'ТОВ КиївПром',
+			'mfo' => '305299',
+			'bank_account_number' => 'UA1234567890',
+			'director' => 'Іванов',
+		]);
+
+		$value = $model->getChangedRawData()->custom_fields_values[0]->values[0]->value;
+		$this->assertSame('305299', $value->mfo);
+		$this->assertSame('UA1234567890', $value->bank_account_number);
+		$this->assertSame('Іванов', $value->director);
+	}
+
+	public function testLegalEntityMultipleValues(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
+		]);
+
+		/** @var LegalEntityField $legal */
+		$legal = $model->cf(14);
+		$legal->setValues([
+			['name' => 'ООО А', 'vat_id' => '111'],
+			['name' => 'ООО Б', 'vat_id' => '222'],
+		]);
+
+		$this->assertSame('ООО А', $legal->getName());
+		$this->assertCount(2, $legal->getValues());
+		$this->assertSame('ООО А', $legal->toArray()[0]['name']);
+		$this->assertSame('ООО Б', $legal->toArray()[1]['name']);
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(2, $values);
+		$this->assertSame('ООО А', $values[0]->value->name);
+		$this->assertSame('ООО Б', $values[1]->value->name);
+	}
+
+	public function testLegalEntitySetNameKeepsOtherEntities(): void
+	{
+		$field = $this->cf(14, 'Requisites', 'LEGAL', 'legal_entity', (object) [
+			'name' => 'ООО А',
+			'vat_id' => '111',
+			'mfo' => '',
+		]);
+		$field->values[] = (object) [
+			'value' => (object) [
+				'name' => 'ООО Б',
+				'vat_id' => '222',
+				'oked' => '',
+			],
+		];
+		$model = $this->makeContactWithFields([$field]);
+
+		/** @var LegalEntityField $legal */
+		$legal = $model->cf(14);
+		$legal->setName('ООО "Какие люди"');
+		$legal->addValue(['name' => 'ООО В', 'vat_id' => '333']);
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(3, $values);
+		$this->assertSame('ООО "Какие люди"', $values[0]->value->name);
+		$this->assertSame('111', $values[0]->value->vat_id);
+		$this->assertFalse(property_exists($values[0]->value, 'mfo'));
+		$this->assertSame('ООО Б', $values[1]->value->name);
+		$this->assertFalse(property_exists($values[1]->value, 'oked'));
+		$this->assertSame('ООО В', $values[2]->value->name);
+	}
+
+	public function testLegalEntitySetValueAcceptsList(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(14, 'Requisites', 'LEGAL', 'legal_entity'),
+		]);
+
+		$model->cf(14)->setValue([
+			['name' => 'А'],
+			['name' => 'Б'],
+		]);
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(2, $values);
+		$this->assertSame('А', $values[0]->value->name);
+		$this->assertSame('Б', $values[1]->value->name);
 	}
 
 	/**
