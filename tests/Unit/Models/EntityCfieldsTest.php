@@ -286,6 +286,65 @@ class EntityCfieldsTest extends TestCase
 		$this->assertSame('a', $model->cf(1)->getValue());
 	}
 
+	public function testMultiSelectAddAndRemoveValues(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Multi', 'M', 'multiselect', 'a'),
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->addValue('b')->addValues(['c', 'a']);
+		$this->assertSame(['a', 'b', 'c'], $cf->getValues());
+
+		$cf->removeValue('b')->removeValues(['missing', 'c']);
+		$this->assertSame(['a'], $cf->getValues());
+		$cf->removeValue('missing');
+		$this->assertSame(['a'], $cf->getValues());
+	}
+
+	public function testMultiSelectAddAndRemoveEnums(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Multi', 'M', 'multiselect'),
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->setEnums([21, 22]);
+		$cf->addEnum(22)->addEnums([23, 21]);
+		$this->assertSame([21, 22, 23], $cf->getEnums());
+
+		$cf->removeEnum(22)->removeEnums([99, 21]);
+		$this->assertSame([23], $cf->getEnums());
+	}
+
+	public function testMultiSelectAddRemoveOnLoadedItems(): void
+	{
+		$model = $this->makeContactWithFields([
+			(object) [
+				'field_id' => 1,
+				'field_name' => 'Multi',
+				'field_code' => 'M',
+				'field_type' => 'multiselect',
+				'values' => [
+					(object) ['value' => 'Онлайн', 'enum_id' => 21],
+					(object) ['value' => 'СБП', 'enum_id' => 22],
+				],
+			],
+		]);
+
+		/** @var MultiSelectField $cf */
+		$cf = $model->cf(1);
+		$cf->addValue('Онлайн')->addEnum(22)->addValue('Карта');
+		$this->assertSame(['Онлайн', 'СБП', 'Карта'], $cf->getValues());
+
+		$cf->removeEnum(21);
+		$this->assertSame(['СБП', 'Карта'], $cf->getValues());
+		$cf->removeValue('СБП');
+		$this->assertSame(['Карта'], $cf->getValues());
+	}
+
 	public function testMultiTextValueWithEnumCodeAndId(): void
 	{
 		$model = $this->makeContactWithFields([
