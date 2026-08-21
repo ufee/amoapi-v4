@@ -155,6 +155,14 @@ final class EntityFixtures
 				'model' => Models\Bot::class,
 				'collection' => Collections\Bots::class,
 			],
+			'agents' => [
+				'method' => 'agents',
+				'args' => [],
+				'api_path' => '/api/v4/amma/agents',
+				'entity_key' => 'agents',
+				'model' => Models\Agent::class,
+				'collection' => Collections\Agents::class,
+			],
 			'widgets' => [
 				'method' => 'widgets',
 				'args' => [],
