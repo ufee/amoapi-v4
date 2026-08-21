@@ -37,5 +37,7 @@ print_r($contact->cf()->byCode(PhoneEnum::CODE)->getValues());
 print_r($contact->cf()->byCode(PhoneEnum::CODE)->getEnums());
 print_r($contact->cf()->byCode(PhoneEnum::CODE)->getEnumCodes());
 
+$contact->cf()->byCode(PhoneEnum::CODE)->reset();
+$contact->cf()->byCode(EmailEnum::CODE)->reset();
 $contact->save();
 ```
