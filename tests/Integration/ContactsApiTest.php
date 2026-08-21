@@ -72,6 +72,26 @@ class ContactsApiTest extends IntegrationTestCase
 		);
 	}
 
+	public function testResetPhoneAndEmailClearsValues(): void
+	{
+		$suffix = uniqid('itest_reset_', false);
+		$contact = $this->api->contacts()->create(['name' => 'ITEST Reset CF ' . $suffix]);
+		$contact->cf()->byCode(EmailEnum::CODE)->setValue($suffix . '@example.com');
+		$contact->cf()->byCode(PhoneEnum::CODE)->setValue('+7900' . substr((string) time(), -7));
+		$this->assertTrue($contact->save(), 'Не удалось создать контакт');
+		$this->assertNotEmpty($contact->id);
+		$this->trackDelete('/api/v4/contacts', (int) $contact->id);
+
+		$found = $this->api->contacts()->find($contact->id);
+		$found->cf()->byCode(PhoneEnum::CODE)->reset();
+		$found->cf()->byCode(EmailEnum::CODE)->reset();
+		$this->assertTrue($found->save(), 'Не удалось очистить Phone/Email');
+
+		$reloaded = $this->api->contacts()->find($contact->id);
+		$this->assertNull($reloaded->cf()->byCode(PhoneEnum::CODE)->getValue());
+		$this->assertNull($reloaded->cf()->byCode(EmailEnum::CODE)->getValue());
+	}
+
 	public function testFindMissingContactReturnsNull(): void
 	{
 		$result = $this->api->contacts()->find(PHP_INT_MAX - 1);

@@ -103,7 +103,58 @@ class EntityCfieldsTest extends TestCase
 
 		$model->cf(1)->reset();
 		$payload = $model->getChangedRawData();
-		$this->assertSame([], $payload->custom_fields_values[0]->values);
+		$this->assertNull($payload->custom_fields_values[0]->values);
+	}
+
+	public function testMultiTextResetSendsNullValues(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Phone', PhoneEnum::CODE, 'multitext', '+7900'),
+			$this->cf(2, 'Email', EmailEnum::CODE, 'multitext', 'a@b.c'),
+		]);
+
+		$model->cf(1)->reset();
+		$model->cf(2)->reset();
+		$payload = $model->getChangedRawData();
+
+		$this->assertCount(2, $payload->custom_fields_values);
+		$this->assertNull($payload->custom_fields_values[0]->values);
+		$this->assertNull($payload->custom_fields_values[1]->values);
+		$this->assertNull($model->cf(1)->getValue());
+		$this->assertNull($model->cf(2)->getValue());
+	}
+
+	/**
+	 * @dataProvider resetNullPayloadTypesProvider
+	 */
+	public function testResetSendsNullForCommonFieldTypes(string $type, $value): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, ucfirst($type), strtoupper($type), $type, $value),
+		]);
+
+		$model->cf(1)->reset();
+		$this->assertNull($model->getChangedRawData()->custom_fields_values[0]->values, $type);
+		$this->assertNull($model->cf(1)->getValue(), $type);
+	}
+
+	public function resetNullPayloadTypesProvider(): array
+	{
+		return [
+			'numeric' => ['numeric', 42],
+			'checkbox' => ['checkbox', true],
+			'url' => ['url', 'https://example.com'],
+			'textarea' => ['textarea', "a\nb"],
+			'date' => ['date', 1704067200],
+			'date_time' => ['date_time', 1704067200],
+			'birthday' => ['birthday', 1704067200],
+			'streetaddress' => ['streetaddress', 'ул. Тестовая, 1'],
+			'monetary' => ['monetary', '100.50'],
+			'tracking_data' => ['tracking_data', 'utm'],
+			'radiobutton' => ['radiobutton', 'A'],
+			'legal_entity' => ['legal_entity', (object) ['name' => 'ООО Тест']],
+			'smart_address' => ['smart_address', 'Москва'],
+		];
 	}
 
 	public function testSelectAndMultiSelectEnums(): void

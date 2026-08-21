@@ -193,14 +193,15 @@ class EntityField
 	}
 
     /**
-     * Get cf raw data
+     * Get cf raw data.
+     * amoCRM PATCH rejects empty values[] with TooFew; clearing a field requires null.
 	 * @return object
      */
     public function getRawData()
     {
 		return (object)[
 			'field_id' => $this->data->field_id,
-			'values' => $this->data->values
+			'values' => $this->data->values ?: null
 		];
 	}
 
