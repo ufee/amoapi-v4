@@ -36,6 +36,7 @@ if (!defined('AMOV4API_ROOT')) {
  * @method \Ufee\AmoV4\Services\Widgets widgets(...$args)
  * @method \Ufee\AmoV4\Services\Webhooks webhooks(...$args)
  * @method \Ufee\AmoV4\Services\Bots bots(...$args)
+ * @method \Ufee\AmoV4\Services\Agents agents(...$args)
  * @method \Ufee\AmoV4\Services\Sources sources(...$args)
  * @method \Ufee\AmoV4\Services\Subscriptions subscriptions(...$args)
  * @method \Ufee\AmoV4\Services\Talks talks(...$args)
@@ -65,6 +66,7 @@ class ApiClient
 		'widgets',
 		'webhooks',
 		'bots',
+		'agents',
 		'sources',
 		'subscriptions',
 		'talks',

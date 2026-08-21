@@ -89,12 +89,12 @@ class Response
 		return $this->validatedEntities($entity_key);
 	}
 	
-    /**
-     * Get json decoded and validate updated entity
-	 * @param int $entity_id
+	/**
+	 * Get json decoded and validate updated entity
+	 * @param int|string $entity_id
 	 * @return object
-     */
-	public function validatedUpdatedEntity(int $entity_id)
+	 */
+	public function validatedUpdatedEntity($entity_id)
 	{
 		$validated = $this->validated();
 		if (property_exists($validated, 'validation-errors') && property_exists($validated, 'detail')) {

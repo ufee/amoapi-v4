@@ -119,6 +119,16 @@ class ResponseTest extends TestCase
 		$response->validatedUpdatedEntity(42);
 	}
 
+	public function testValidatedUpdatedEntityAcceptsUuid(): void
+	{
+		$api = $this->makeApiClient();
+		$uuid = 'b1f2c3d4-0000-4a5b-8c9d-000000000001';
+		$response = ResponseFactory::make($api, ['id' => $uuid, 'name' => 'Agent'], 200);
+
+		$row = $response->validatedUpdatedEntity($uuid);
+		$this->assertSame($uuid, $row->id);
+	}
+
 	public function testParseJsonAsArray(): void
 	{
 		$api = $this->makeApiClient();

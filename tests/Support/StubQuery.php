@@ -89,7 +89,7 @@ class StubQuery extends Query
 		if ($instance->callbacks->trigger('query.response.code', $code, $this) === false) {
 			return false;
 		}
-		if (in_array($code, [200, 202, 204], true)) {
+		if (in_array($code, [200, 201, 202, 204], true)) {
 			$instance->queries->pushQuery($this);
 		} else {
 			$instance->callbacks->trigger('query.response.fail', $this, $code);

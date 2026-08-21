@@ -319,7 +319,7 @@ class Query
 		$this->attributes['execution_time'] = round($this->end_time - $this->start_time, 5);
 		$this->attributes['memory_usage'] = memory_get_peak_usage(true) / 1024 / 1024;
 
-		if (in_array($code, [200, 202, 204])) {
+		if (in_array($code, [200, 201, 202, 204])) {
 			$instance->queries->pushQuery($this);
 		} else {
 			$instance->callbacks->trigger('query.response.fail', $this, $code);
