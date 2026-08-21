@@ -41,6 +41,7 @@ composer test
 | `AMO_BOT_ID` | опционально: salesbot для run/stop |
 | `AMO_WIDGET_CODE` | опционально: код виджета для install/uninstall |
 | `AMO_WIDGET_SETTINGS` | опционально: JSON настроек виджета |
+| `AMO_AMMA_MCP_URL` | опционально: HTTPS URL MCP-сервера для создания агента Аммы |
 
 ## Coverage
 

@@ -86,6 +86,7 @@ foreach ($leads as $lead) {
 | [Вебхуки](docs/entities/webhooks.md) | webhooks |
 | [Виджеты](docs/entities/widgets.md) | widgets |
 | [Salesbot](docs/entities/bots.md) | bots |
+| [Агенты Аммы](docs/entities/agents.md) | agents |
 | [Подписчики сущности](docs/entities/subscriptions.md) | subscriptions |
 | [Источники](docs/entities/sources.md) | sources |
 | [Беседы](docs/entities/talks.md) | talks |

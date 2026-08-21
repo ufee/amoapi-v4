@@ -26,6 +26,7 @@
 | [Вебхуки](entities/webhooks.md) | webhooks |
 | [Виджеты](entities/widgets.md) | widgets |
 | [Salesbot](entities/bots.md) | bots |
+| [Агенты Аммы](entities/agents.md) | agents |
 | [Подписчики сущности](entities/subscriptions.md) | subscriptions |
 | [Источники](entities/sources.md) | sources |
 | [Беседы](entities/talks.md) | talks |
@@ -55,6 +56,7 @@ $api->users();
 $api->webhooks();
 $api->widgets();
 $api->bots();
+$api->agents();
 $api->subscriptions($entity_type, $entity_id); // entity_type: leads|customers
 $api->sources();
 $api->talks();
