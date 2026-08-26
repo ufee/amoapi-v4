@@ -10,6 +10,31 @@ use Ufee\AmoV4\Collections\Links;
 
 trait LinkedLeads
 {
+	/**
+     * Create linked lead model
+     * @return Lead
+     */
+    public function createLead()
+    {
+		$parent = $this;
+		$lead = $this->service->instance->leads()->create();
+		$lead->responsible_user_id = $this->responsible_user_id;
+
+		if ($this->service->entity_key === 'contacts') {
+			$lead->attachContact($this);
+			if ($this->hasCompany()) {
+				$lead->attachCompany($this->getCompanyId());
+			}
+		} elseif ($this->service->entity_key === 'companies') {
+			$lead->attachCompany($this);
+		}
+
+		$lead->onCreate(function(&$model) use (&$parent) {
+			$parent->attachLead($model);
+		});
+		return $lead;
+	}
+
     /**
      * Create entity link
 	 * @param integer|Lead $entity - id or model

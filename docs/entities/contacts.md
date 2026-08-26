@@ -34,6 +34,15 @@ $contact->attachTags(['VIP', 'Partner']);
 $contact->attachLead($lead_id);
 $contact->attachCompany($company_id);
 
+// создание связанной сделки/компании (поля задаются после create*)
+$lead = $contact->createLead();
+$lead->name = 'Новая сделка';
+$lead->save();
+
+$company = $contact->createCompany();
+$company->name = 'ООО Ромашка';
+$company->save();
+
 $paginate = $contact->getTasks($filter = []);
 $task = $contact->createTask($type = 1);
 $note = $contact->createNote($type = 'common');

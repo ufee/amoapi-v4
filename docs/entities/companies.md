@@ -32,6 +32,15 @@ $company->attachLead($lead_id);
 $company->attachContact($contact_id);
 $company->attachContacts([$contact_id1, $contact_id2]);
 
+// создание связанной сделки/контакта (поля задаются после create*)
+$lead = $company->createLead();
+$lead->name = 'Новая сделка';
+$lead->save();
+
+$contact = $company->createContact();
+$contact->name = 'Иван';
+$contact->save();
+
 $contacts = $company->contacts();
 $paginate = $company->getTasks($filter = []);
 $task = $company->createTask($type = 1);
