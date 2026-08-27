@@ -109,6 +109,68 @@ class EntityCfieldsTest extends TestCase
 		$this->assertNull($payload->custom_fields_values[0]->values);
 	}
 
+	public function testTextSetValueRejectsValueLongerThan256(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(1, 'Note', 'NOTE', 'text', 'old'),
+			$this->cf(17, 'Area', 'AREA', 'textarea', 'old'),
+			$this->cf(18, 'Track', 'TRACK', 'tracking_data', 'old'),
+		]);
+
+		$max = str_repeat('я', TextField::MAX_LENGTH);
+		$model->cf(1)->setValue($max);
+		$this->assertSame($max, $model->cf(1)->getValue());
+
+		try {
+			$model->cf(1)->setValue($max . 'x');
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('must not exceed 256', $e->getMessage());
+		}
+
+		try {
+			$model->cf(1)->setValues([$max . 'x']);
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('must not exceed 256', $e->getMessage());
+		}
+
+		$longer = str_repeat('a', TextField::MAX_LENGTH + 1);
+		$model->cf(17)->setValue($longer);
+		$model->cf(18)->setValue($longer);
+		$this->assertSame($longer, $model->cf(17)->getValue());
+		$this->assertSame($longer, $model->cf(18)->getValue());
+	}
+
+	public function testTextareaSetValueRejectsValueLongerThan26000(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(17, 'Area', 'AREA', 'textarea', 'old'),
+			$this->cf(18, 'Track', 'TRACK', 'tracking_data', 'old'),
+		]);
+
+		$max = str_repeat('я', TextField::TEXTAREA_MAX_LENGTH);
+		$model->cf(17)->setValue($max);
+		$this->assertSame($max, $model->cf(17)->getValue());
+
+		try {
+			$model->cf(17)->setValue($max . 'x');
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('must not exceed 26000', $e->getMessage());
+		}
+
+		try {
+			$model->cf(17)->setValues([$max . 'x']);
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('must not exceed 26000', $e->getMessage());
+		}
+
+		$model->cf(18)->setValue($max . 'x');
+		$this->assertSame($max . 'x', $model->cf(18)->getValue());
+	}
+
 	public function testMultiTextResetSendsNullValues(): void
 	{
 		$model = $this->makeContactWithFields([
