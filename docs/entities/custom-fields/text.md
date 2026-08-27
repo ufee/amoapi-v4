@@ -4,6 +4,8 @@
 
 Формат API — одна строка в `value`. Типы `textarea` и `tracking_data` мапятся на `TextField`.
 
+Лимиты API (`InvalidArgumentException` при превышении): `text` — 256 символов, `textarea` — 26 000. У `tracking_data` лимита нет.
+
 ```php
 $lead->cf('Комментарий')->setValue('Текст');
 $lead->cf('Описание')->setValue("Строка1\nСтрока2"); // type = textarea

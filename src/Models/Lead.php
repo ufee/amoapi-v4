@@ -20,46 +20,6 @@ class Lead extends WithCfield
 	use Traits\MainContact;
 
 	/**
-     * Create linked contact model
-     * @return Contact
-     */
-    public function createContact()
-    {
-		$lead = $this;
-		$contact = $this->service->instance->contacts()->create();
-		$contact->responsible_user_id = $this->responsible_user_id;
-		$contact->attachLead($this);
-
-		if ($this->hasCompany()) {
-			$contact->attachCompany($this->getCompanyId());
-		}
-		$contact->onCreate(function(&$model) use (&$lead) {
-			$lead->attachContact($model);
-		});
-		return $contact;
-	}
-
-	/**
-     * Create linked company model
-     * @return Company
-     */
-    public function createCompany()
-    {
-		$lead = $this;
-		$company = $this->service->instance->companies()->create();
-		$company->responsible_user_id = $this->responsible_user_id;
-		$company->attachLead($this);
-
-		if ($this->hasMainContact()) {
-			$company->attachContact($this->getMainContact());
-		}
-		$company->onCreate(function(&$model) use (&$lead) {
-			$lead->attachCompany($model);
-		});
-		return $company;
-	}
-
-	/**
 	 * Get pipeline
 	 * @return Pipeline
 	 */
