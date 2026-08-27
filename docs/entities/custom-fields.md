@@ -84,7 +84,7 @@ foreach ($lead->cf()->all() as $cf) {
 | `tracking_data` | Отслеживаемые данные | [text](custom-fields/text.md) |
 | `linked_entity` | Связь с другим элементом | — (`EntityField`) |
 | `monetary` | Денежное (платная опция Супер-поля) | [numeric](custom-fields/numeric.md) |
-| `chained_list` | Каталоги и списки (платная опция Супер-поля) | — (`EntityField`) |
+| `chained_list` | Каталоги и списки (платная опция Супер-поля) | [chained_list](custom-fields/chained-list.md) |
 | `file` | Файл | [file](custom-fields/file.md) |
 | `payer` | Плательщик (только в списке Счета-покупки) | — (`EntityField`) |
 | `supplier` | Поставщик (только в списке Счета-покупки) | — (`EntityField`) |

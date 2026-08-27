@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ufee\AmoV4\Tests\Unit\Models;
 
+use Ufee\AmoV4\Models\EntityCfields\ChainedListField;
 use Ufee\AmoV4\Models\EntityCfields\CheckboxField;
 use Ufee\AmoV4\Models\EntityCfields\DateField;
 use Ufee\AmoV4\Models\EntityCfields\DateTimeField;
@@ -52,6 +53,7 @@ class EntityCfieldsTest extends TestCase
 			$this->cf(19, 'Money', 'MONEY', 'monetary', '100.50'),
 			$this->cf(20, 'Cat', 'CAT', 'category', 'Root'),
 			$this->cf(21, 'Unknown', 'UNK', 'items', 'x'),
+			$this->cf(22, 'Chain', 'CHAIN', 'chained_list'),
 		]);
 
 		$this->assertInstanceOf(TextField::class, $model->cf(1));
@@ -76,6 +78,7 @@ class EntityCfieldsTest extends TestCase
 		$this->assertInstanceOf(SelectField::class, $model->cf(20));
 		$this->assertInstanceOf(EntityField::class, $model->cf(21));
 		$this->assertNotInstanceOf(TextField::class, $model->cf(21));
+		$this->assertInstanceOf(ChainedListField::class, $model->cf(22));
 	}
 
 	public function testLookupByNameCodeAndType(): void
@@ -782,6 +785,149 @@ class EntityCfieldsTest extends TestCase
 		$this->assertSame('ООО Б', $values[1]->value->name);
 		$this->assertFalse(property_exists($values[1]->value, 'oked'));
 		$this->assertSame('ООО В', $values[2]->value->name);
+	}
+
+	public function testChainedListSetValuesPayloadHasNoValueKey(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(22, 'Chain', 'CHAIN', 'chained_list'),
+		]);
+
+		/** @var ChainedListField $cf */
+		$cf = $model->cf(22);
+		$cf->setValues([
+			['catalog_id' => 1001, 'catalog_element_id' => 12235],
+			(object) ['catalog_id' => 1007, 'catalog_element_id' => 12243],
+		]);
+
+		$this->assertSame(1001, $cf->getValue()->catalog_id);
+		$this->assertSame(12235, $cf->getValue()->catalog_element_id);
+		$this->assertCount(2, $cf->getValues());
+		$this->assertSame([
+			['catalog_id' => 1001, 'catalog_element_id' => 12235],
+			['catalog_id' => 1007, 'catalog_element_id' => 12243],
+		], $cf->toArray());
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(2, $values);
+		$this->assertSame(1001, $values[0]->catalog_id);
+		$this->assertSame(12235, $values[0]->catalog_element_id);
+		$this->assertFalse(property_exists($values[0], 'value'));
+		$this->assertSame(1007, $values[1]->catalog_id);
+		$this->assertSame(12243, $values[1]->catalog_element_id);
+	}
+
+	public function testChainedListSetValueAndAddValue(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(22, 'Chain', 'CHAIN', 'chained_list'),
+		]);
+
+		/** @var ChainedListField $cf */
+		$cf = $model->cf(22);
+		$cf->setValue(['catalog_id' => 1001, 'catalog_element_id' => 12235]);
+		$cf->addValue(['catalog_id' => 1007, 'catalog_element_id' => 12243]);
+
+		$values = $model->getChangedRawData()->custom_fields_values[0]->values;
+		$this->assertCount(2, $values);
+		$this->assertSame(12235, $values[0]->catalog_element_id);
+		$this->assertSame(12243, $values[1]->catalog_element_id);
+	}
+
+	public function testChainedListSetValueAcceptsListAndCatalogElement(): void
+	{
+		$api = $this->makeApiClient();
+		$element = $api->catalogElements(1001)->create(['id' => 12235, 'name' => 'Item']);
+		$model = $api->contacts()->create([
+			'name' => 'CF',
+			'custom_fields_values' => [
+				$this->cf(22, 'Chain', 'CHAIN', 'chained_list'),
+			],
+		]);
+
+		/** @var ChainedListField $cf */
+		$cf = $model->cf(22);
+		$cf->setValue($element);
+		$this->assertSame([
+			['catalog_id' => 1001, 'catalog_element_id' => 12235],
+		], $cf->toArray());
+
+		$cf->setValue([
+			['catalog_id' => 1001, 'catalog_element_id' => 1],
+			['catalog_id' => 1007, 'catalog_element_id' => 2],
+		]);
+		$this->assertCount(2, $cf->getValues());
+	}
+
+	public function testChainedListReadsApiShapeAndStripsExtraKeysOnSave(): void
+	{
+		$field = $this->cf(22, 'Chain', 'CHAIN', 'chained_list');
+		$field->values = [
+			(object) [
+				'catalog_id' => 1001,
+				'catalog_element_id' => 12235,
+				'metadata' => (object) ['name' => 'Item'],
+			],
+		];
+		$model = $this->makeContactWithFields([$field]);
+
+		/** @var ChainedListField $cf */
+		$cf = $model->cf(22);
+		$this->assertSame(1001, $cf->getValue()->catalog_id);
+		$this->assertSame(12235, $cf->getValues()[0]->catalog_element_id);
+
+		$cf->setValues($cf->getValues());
+		$raw = $model->getChangedRawData()->custom_fields_values[0]->values[0];
+		$this->assertSame(1001, $raw->catalog_id);
+		$this->assertSame(12235, $raw->catalog_element_id);
+		$this->assertFalse(property_exists($raw, 'metadata'));
+		$this->assertFalse(property_exists($raw, 'value'));
+	}
+
+	public function testChainedListResetSendsNullValues(): void
+	{
+		$field = $this->cf(22, 'Chain', 'CHAIN', 'chained_list');
+		$field->values = [
+			(object) ['catalog_id' => 1001, 'catalog_element_id' => 12235],
+		];
+		$model = $this->makeContactWithFields([$field]);
+
+		$model->cf(22)->reset();
+		$this->assertNull($model->getChangedRawData()->custom_fields_values[0]->values);
+		$this->assertNull($model->cf(22)->getValue());
+		$this->assertSame([], $model->cf(22)->getValues());
+	}
+
+	public function testChainedListRejectsInvalidAndTooManyValues(): void
+	{
+		$model = $this->makeContactWithFields([
+			$this->cf(22, 'Chain', 'CHAIN', 'chained_list'),
+		]);
+
+		/** @var ChainedListField $cf */
+		$cf = $model->cf(22);
+
+		try {
+			$cf->setValue('oops');
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('catalog_id', $e->getMessage());
+		}
+
+		try {
+			$cf->setValues([['catalog_id' => 1]]);
+			$this->fail('Expected InvalidArgumentException');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString('catalog_element_id', $e->getMessage());
+		}
+
+		$tooMany = [];
+		for ($i = 1; $i <= 6; $i++) {
+			$tooMany[] = ['catalog_id' => $i, 'catalog_element_id' => $i];
+		}
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('at most 5');
+		$cf->setValues($tooMany);
 	}
 
 	public function testLegalEntitySetValueAcceptsList(): void

@@ -31,7 +31,7 @@ class EntityCustomFields
 		'tracking_data' => 'Ufee\AmoV4\Models\EntityCfields\TextField',
 		// 'linked_entity'
 		'monetary' => 'Ufee\AmoV4\Models\EntityCfields\NumericField',
-		// 'chained_list'
+		'chained_list' => 'Ufee\AmoV4\Models\EntityCfields\ChainedListField',
 		'file' => 'Ufee\AmoV4\Models\EntityCfields\FileField',
 		// 'payer'
 		// 'supplier'
