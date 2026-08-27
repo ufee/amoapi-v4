@@ -8,6 +8,31 @@ use Ufee\AmoV4\Models\Link;
 
 trait LinkedCompanies
 {
+	/**
+     * Create linked company model
+     * @return Company
+     */
+    public function createCompany()
+    {
+		$parent = $this;
+		$company = $this->service->instance->companies()->create();
+		$company->responsible_user_id = $this->responsible_user_id;
+
+		if ($this->service->entity_key === 'leads') {
+			$company->attachLead($this);
+			if ($this->hasMainContact()) {
+				$company->attachContact($this->getMainContact());
+			}
+		} elseif ($this->service->entity_key === 'contacts') {
+			$company->attachContact($this);
+		}
+
+		$company->onCreate(function(&$model) use (&$parent) {
+			$parent->attachCompany($model);
+		});
+		return $company;
+	}
+
     /**
      * Create entity link
 	 * @param integer|Company $entity - id or model

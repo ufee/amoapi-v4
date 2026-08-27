@@ -7,6 +7,7 @@ namespace Ufee\AmoV4\Tests\Integration;
 use Ufee\AmoV4\Enums\CustomFields\LegalEntityTypeEnum;
 use Ufee\AmoV4\Enums\CustomFields\SmartAddressEnum;
 use Ufee\AmoV4\Models\AccountCfield;
+use Ufee\AmoV4\Models\EntityCfields\ChainedListField;
 use Ufee\AmoV4\Models\EntityCfields\FileField;
 use Ufee\AmoV4\Models\Lead;
 
@@ -119,28 +120,38 @@ class CustomFieldsResetApiTest extends IntegrationTestCase
 		$this->assertTrue($lead->save(), 'Не удалось создать сделку');
 		$this->trackDelete('/api/v4/leads', (int) $lead->id);
 
-		$query = $this->api->query('PATCH', '/api/v4/leads/' . $lead->id);
-		$query->setJsonData([
-			'custom_fields_values' => [
-				[
-					'field_id' => (int) $field->id,
-					'values' => [
-						[
-							'catalog_id' => $catalogId,
-							'catalog_element_id' => (int) $element->id,
-						],
-					],
-				],
+		/** @var ChainedListField $cf */
+		$cf = $lead->cf((int) $field->id);
+		$cf->setValues([
+			[
+				'catalog_id' => $catalogId,
+				'catalog_element_id' => (int) $element->id,
 			],
 		]);
-		$query->execute();
-		$this->assertSame(200, $query->response->getCode(), 'Не удалось записать chained_list');
+		$this->assertTrue($lead->save(), 'Не удалось записать chained_list через setValues');
 
 		$filled = $this->api->leads()->find((int) $lead->id);
-		$this->assertNotNull($filled->cf((int) $field->id)->getValue(), 'chained_list не записалось');
+		/** @var ChainedListField $filledCf */
+		$filledCf = $filled->cf((int) $field->id);
+		$this->assertInstanceOf(ChainedListField::class, $filledCf);
+		$this->assertNotNull($filledCf->getValue(), 'chained_list не записалось');
+		$this->assertSame($catalogId, (int) $filledCf->getValue()->catalog_id);
+		$this->assertSame((int) $element->id, (int) $filledCf->getValue()->catalog_element_id);
+		$this->assertSame(
+			[['catalog_id' => $catalogId, 'catalog_element_id' => (int) $element->id]],
+			$filledCf->toArray()
+		);
 
-		$filled->cf((int) $field->id)->reset();
-		$this->assertTrue($filled->save(), 'Не удалось reset() chained_list');
+		$filledCf->setValue($element);
+		$this->assertTrue($filled->save(), 'Не удалось записать chained_list через setValue(CatalogElement)');
+
+		$rewritten = $this->api->leads()->find((int) $lead->id);
+		$rewrittenCf = $rewritten->cf((int) $field->id);
+		$this->assertSame($catalogId, (int) $rewrittenCf->getValue()->catalog_id);
+		$this->assertSame((int) $element->id, (int) $rewrittenCf->getValue()->catalog_element_id);
+
+		$rewrittenCf->reset();
+		$this->assertTrue($rewritten->save(), 'Не удалось reset() chained_list');
 
 		$cleared = $this->api->leads()->find((int) $lead->id);
 		$this->assertNull(
