@@ -44,6 +44,9 @@ if (!defined('AMOV4API_ROOT')) {
  */
 class ApiClient
 {
+	/** Fallback timezone if account datetime_settings are not available */
+	public const DEFAULT_TIMEZONE = 'Europe/Moscow';
+
 	protected $services = [
 		'account',
 		'users',
@@ -79,11 +82,12 @@ class ApiClient
 		'query_timeout' => 30,
 		'query_delay' => 0.15,
 		'query_retries' => 7,
-		'timezone' => 'Europe/Moscow',
+		'timezone' => null,
 		'lang' => 'ru',
 		'user_agent' => 'Amoapi v4'
 	];
 	protected $_integration = [];
+	protected $_timezone = null;
 
 	protected static $_cache = [];
 	protected static $_oauth = [];
@@ -127,6 +131,28 @@ class ApiClient
 	public function catalogElement(int $catalog_id, int $element_id, array $with = [])
 	{
 		return $this->catalogElements($catalog_id)->find($element_id, $with);
+	}
+
+	/**
+	 * Get account timezone
+	 * Param 'timezone' is a manual override, by default resolved from account datetime_settings
+	 * @return \DateTimeZone
+	 */
+	public function timezone()
+	{
+		if ($tz = $this->getParam('timezone')) {
+			return new \DateTimeZone($tz);
+		}
+		if (is_null($this->_timezone)) {
+			$this->_timezone = static::DEFAULT_TIMEZONE;
+			try {
+				$settings = $this->cache->account()->datetime_settings;
+				if (!empty($settings->timezone)) {
+					$this->_timezone = $settings->timezone;
+				}
+			} catch (\Exception $e) {}
+		}
+		return new \DateTimeZone($this->_timezone);
 	}
 
 	/**
