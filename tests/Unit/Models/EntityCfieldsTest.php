@@ -261,6 +261,94 @@ class EntityCfieldsTest extends TestCase
 		$this->assertNull($model->cf(1)->format());
 	}
 
+	public function testDateFieldsAreReadInAccountTimezone(): void
+	{
+		$api = $this->makeApiClient();
+		$api->setParam('timezone', 'America/New_York');
+		$model = $api->contacts()->create([
+			'name' => 'D',
+			'custom_fields_values' => [
+				// amoCRM хранит date как полночь по времени аккаунта
+				$this->cf(1, 'Date', 'D', 'date', 1704085200),
+				$this->cf(2, 'DT', 'DT', 'date_time', 1704067200),
+			],
+		]);
+
+		$this->assertSame('2024-01-01', $model->cf(1)->format('Y-m-d'));
+		$this->assertSame('America/New_York', $model->cf(1)->getDateTime()->getTimezone()->getName());
+
+		$this->assertSame('2023-12-31 19:00:00', $model->cf(2)->format());
+		$this->assertSame('America/New_York', $model->cf(2)->getDateTime()->getTimezone()->getName());
+	}
+
+	public function testSetDateStoresAccountMidnight(): void
+	{
+		$api = $this->makeApiClient();
+		$api->setParam('timezone', 'Asia/Yekaterinburg');
+		$model = $api->contacts()->create([
+			'name' => 'D',
+			'custom_fields_values' => [
+				$this->cf(1, 'Date', 'D', 'date'),
+			],
+		]);
+
+		$midnight = (int) (new \DateTime('2024-01-15 00:00:00', new \DateTimeZone('Asia/Yekaterinburg')))->format('U');
+
+		$model->cf(1)->setDate('2024-01-15');
+		$this->assertSame($midnight, $model->cf(1)->getValue());
+		$this->assertSame('2024-01-15', $model->cf(1)->format());
+
+		// календарная дата берётся из самого объекта, время обнуляется по зоне аккаунта
+		$model->cf(1)->setDate(new \DateTimeImmutable('2024-01-15 23:30:00', new \DateTimeZone('Asia/Yekaterinburg')));
+		$this->assertSame($midnight, $model->cf(1)->getValue());
+
+		$model->cf(1)->setDate($midnight);
+		$this->assertSame($midnight, $model->cf(1)->getValue());
+
+		$model->cf(1)->setDate(null);
+		$this->assertNull($model->cf(1)->getValue());
+	}
+
+	public function testSetDateTimeUsesAccountTimezone(): void
+	{
+		$api = $this->makeApiClient();
+		$api->setParam('timezone', 'Europe/Moscow');
+		$model = $api->contacts()->create([
+			'name' => 'D',
+			'custom_fields_values' => [
+				$this->cf(1, 'DT', 'DT', 'date_time'),
+			],
+		]);
+
+		$model->cf(1)->setDateTime('2024-06-01 15:30:00');
+		$this->assertSame(1717245000, $model->cf(1)->getValue()); // 12:30 UTC
+		$this->assertSame('2024-06-01 15:30:00', $model->cf(1)->format());
+
+		$model->cf(1)->setDateTime(new \DateTimeImmutable('2024-06-01 12:30:00', new \DateTimeZone('UTC')));
+		$this->assertSame(1717245000, $model->cf(1)->getValue());
+
+		$model->cf(1)->setDate('2024-06-01 15:30:00');
+		$this->assertSame(1717245000, $model->cf(1)->getValue());
+
+		$model->cf(1)->setDateTime(null);
+		$this->assertNull($model->cf(1)->getValue());
+	}
+
+	public function testSetDateRejectsInvalidValue(): void
+	{
+		$api = $this->makeApiClient();
+		$api->setParam('timezone', 'UTC');
+		$model = $api->contacts()->create([
+			'name' => 'D',
+			'custom_fields_values' => [
+				$this->cf(1, 'Date', 'D', 'date'),
+			],
+		]);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$model->cf(1)->setDate('not a date');
+	}
+
 	public function testFileFieldResetKeepsSingleNullValue(): void
 	{
 		$model = $this->makeContactWithFields([

@@ -2,13 +2,38 @@
 
 [← Поля и группы полей](../custom-fields.md)
 
-Значение — unix timestamp. Есть хелперы `getDateTime()` и `format()`.
+Значение — unix timestamp. amoCRM обнуляет время и хранит **полночь по
+[таймзоне аккаунта](../../configuration.md)**, поэтому timestamp, посчитанный по
+таймзоне php-процесса, может дать в карточке соседний день.
+
+Используйте `setDate()` — он считает полночь по таймзоне аккаунта:
 
 ```php
-$contact->cf('Дата договора')->setValue(strtotime('2024-01-15'));
-$contact->cf('День рождения')->setValue(strtotime('1990-05-01')); // type = birthday
-
-$dt = $contact->cf('Дата договора')->getDateTime(); // DateTime в timezone клиента
-echo $contact->cf('Дата договора')->format('Y-m-d');
+$contact->cf('Дата договора')->setDate('2024-01-15');
+$contact->cf('День рождения')->setDate('1990-05-01'); // type = birthday
+$contact->cf('Дата договора')->setDate(new \DateTimeImmutable('2024-01-15'));
+$contact->cf('Дата договора')->setDate(1705266000);   // сырой timestamp, как есть
+$contact->cf('Дата договора')->setDate(null);         // очистить значение
 $contact->save();
+```
+
+Из `\DateTimeInterface` берётся календарная дата самого объекта (`Y-m-d`), время
+обнуляется по таймзоне аккаунта. Относительные строки (`'now'`, `'+1 day'`) тоже
+вычисляются по времени аккаунта. Некорректная строка вызывает
+`\InvalidArgumentException`.
+
+Чтение — в таймзоне аккаунта, то есть `format()` показывает ту же дату, что и
+интерфейс:
+
+```php
+$dt = $contact->cf('Дата договора')->getDateTime(); // \DateTime в таймзоне аккаунта
+echo $contact->cf('Дата договора')->format('Y-m-d');
+```
+
+Без `setDate()` расхождение выглядит так (php-процесс в UTC+10, аккаунт в
+Europe/Moscow):
+
+```php
+strtotime('2024-01-15');                     // 1705240800 → в карточке 14.01.2024
+$contact->cf('Дата')->setDate('2024-01-15'); // 1705266000 → в карточке 15.01.2024
 ```
