@@ -33,6 +33,19 @@ $exists = \Ufee\AmoV4\ApiClient::hasInstance($client_id_a);
 $api->setParam('query_delay', 0.15);   // задержка между запросами (сек)
 $api->setParam('query_retries', 3);    // кол-во попыток при ошибках 429
 $api->setParam('lang', 'ru');          // язык аккаунта
+$api->setParam('timezone', 'UTC');     // таймзона аккаунта, по умолчанию null
+```
+
+Таймзона по умолчанию определяется автоматически из настроек аккаунта
+(`_embedded.datetime_settings.timezone` в `/api/v4/account?with=datetime_settings`)
+и берётся из кэша аккаунта, так что дополнительных запросов не делает.
+Она используется при работе с полями [date / birthday](entities/custom-fields/date.md)
+и [date_time](entities/custom-fields/date-time.md).
+Явно заданный `timezone` переопределяет настройки аккаунта, а если аккаунт
+недоступен — используется `Europe/Moscow`.
+
+```php
+$tz = $api->timezone(); // \DateTimeZone
 ```
 
 ## OAuth 2.0
