@@ -112,7 +112,7 @@ class FileField extends EntityField
 	 * @param string $key
 	 * @return mixed
 	 */
-	protected function getValueProp(string $key): mixed
+	protected function getValueProp(string $key)
 	{
 		$value = $this->getValue();
 		if (is_object($value) && property_exists($value, $key)) {
