@@ -75,21 +75,21 @@ class WidgetsTest extends TestCase
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Bot ID must be positive integer');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 0, 'cont-1');
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 0, 1);
 	}
 
 	public function testContinueBotRejectsEmptyContinueId(): void
 	{
 		$this->expectException(\InvalidArgumentException::class);
-		$this->expectExceptionMessage('Continue ID must be non-empty');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, '');
+		$this->expectExceptionMessage('Continue ID must be positive integer');
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 0);
 	}
 
 	public function testContinueBotRejectsInvalidBotType(): void
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Bot type must be one of');
-		$this->service('widgets')->continueBot('bots', 1, 'c1');
+		$this->service('widgets')->continueBot('bots', 1, 1);
 	}
 
 	public function testContinueBotRejectsTooManyHandlers(): void
@@ -103,14 +103,14 @@ class WidgetsTest extends TestCase
 		}
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('maximum 10 handlers');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 'c1', [], $handlers);
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 1, [], $handlers);
 	}
 
 	public function testContinueBotRejectsInvalidHandlerName(): void
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('handler must be one of: show, goto');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 'c1', [], [[
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 1, [], [[
 			'handler' => 'unknown',
 			'params' => [],
 		]]);
@@ -120,7 +120,7 @@ class WidgetsTest extends TestCase
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('must not exceed 80 characters');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 'c1', [], [[
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 1, [], [[
 			'handler' => Widgets::HANDLER_SHOW,
 			'params' => [
 				'type' => 'text',
@@ -133,7 +133,7 @@ class WidgetsTest extends TestCase
 	{
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('maximum 25 buttons');
-		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 'c1', [], [[
+		$this->service('widgets')->continueBot(Widgets::BOT_SALESBOT, 1, 1, [], [[
 			'handler' => Widgets::HANDLER_SHOW,
 			'params' => [
 				'type' => 'buttons',
