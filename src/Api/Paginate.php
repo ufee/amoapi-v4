@@ -194,6 +194,7 @@ class Paginate implements \Iterator
 	 * Get current page models
 	 * @return Entities
 	 */
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		return $this->fetchPage();
@@ -203,6 +204,7 @@ class Paginate implements \Iterator
 	 * Get current page
 	 * @return integer
 	 */
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return $this->page;
