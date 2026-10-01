@@ -141,4 +141,28 @@ class PaginateTest extends TestCase
 		$this->assertSame(1, $paginate->pageNum());
 		$this->assertCount(1, $paginate->fetchPage());
 	}
+
+	public function testClassLoadsWithoutDeprecationNotices(): void
+	{
+		$autoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
+		$script = sprintf(
+			'require %s; class_exists(%s); echo "ok";',
+			var_export($autoload, true),
+			var_export(Paginate::class, true)
+		);
+		$cmd = implode(' ', [
+			escapeshellarg(PHP_BINARY),
+			'-n',
+			'-d', 'error_reporting=E_ALL',
+			'-d', 'display_errors=1',
+			'-d', 'log_errors=0',
+			'-r', escapeshellarg($script),
+			'2>&1',
+		]);
+
+		$output = (string) shell_exec($cmd);
+
+		$this->assertStringContainsString('ok', $output);
+		$this->assertStringNotContainsString('Deprecated', $output, $output);
+	}
 }
