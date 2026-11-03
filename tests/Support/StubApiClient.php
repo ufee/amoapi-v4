@@ -32,15 +32,15 @@ class StubApiClient extends ApiClient
 		$stub = $selfRef->newInstanceWithoutConstructor();
 
 		foreach ($ref->getProperties() as $prop) {
+			if ($prop->isStatic()) {
+				continue;
+			}
 			$prop->setAccessible(true);
 			$prop->setValue($stub, $prop->getValue($real));
 		}
-
-		$instances = $ref->getProperty('_instances');
-		$instances->setAccessible(true);
-		$all = $instances->getValue(null);
-		$all[$real->getKey()] = $stub;
-		$instances->setValue(null, $all);
+		// oauth, cache, queries и callbacks держат своего клиента: пересоздаём их для stub
+		$stub->_bootState();
+		static::register($stub);
 
 		return $stub;
 	}

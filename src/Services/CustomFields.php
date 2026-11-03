@@ -21,6 +21,7 @@ class CustomFields extends Service
     public function __construct(ApiClient $client, array $args)
     {
         $this->client_id = $client->client_id;
+        $this->client = $client;
         $this->instance_key = $client->getKey();
 
 		if (empty($args[0])) {

@@ -30,6 +30,7 @@ class PipelineStatuses extends Service
 			throw new \InvalidArgumentException('PipelineStatuses Service required pipeline_id argument');
 		}
 		$this->client_id = $client->client_id;
+		$this->client = $client;
 		$this->instance_key = $client->getKey();
 		$this->api_path = str_replace('{pipeline_id}', $pipeline_id, $this->api_path);
 		$this->_boot();

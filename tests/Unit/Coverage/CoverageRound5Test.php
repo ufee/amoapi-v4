@@ -400,9 +400,7 @@ class CoverageRound5Test extends TestCase
 		$ref = new \ReflectionClass(\Ufee\AmoV4\Api\Cache\AbstractStorage::class);
 		$local = $ref->getProperty('_local');
 		$local->setAccessible(true);
-		$all = $local->getValue(null);
-		unset($all['lazy-set_' . $api->client_id]);
-		$local->setValue(null, $all);
+		$local->setValue($storage, null);
 
 		$this->assertTrue($storage->set('k', (object) ['v' => 1], 10));
 		$this->assertSame(1, $storage->get('k')->v);

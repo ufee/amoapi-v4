@@ -47,8 +47,6 @@ class ApiClient
 {
 	/** Fallback timezone if account datetime_settings are not available */
 	public const DEFAULT_TIMEZONE = 'Europe/Moscow';
-	/** Лимит экземпляров в процессе, старейший вытесняется */
-	const MAX_INSTANCES = 200;
 
 	protected $services = [
 		'account',
@@ -93,11 +91,19 @@ class ApiClient
 	protected $_integration = [];
 	protected $_timezone = null;
 
-	protected static $_cache = [];
-	protected static $_oauth = [];
-	protected static $_queries = [];
-	protected static $_callbacks = [];
+	protected $_cache;
+	protected $_oauth;
+	protected $_queries;
+	protected $_callbacks;
+
+	/**
+	 * Индекс экземпляров: ключ client_id:domain => \WeakReference.
+	 * Клиент живёт, пока его держит владелец; после освобождения ключ становится промахом
+	 */
 	protected static $_instances = [];
+	/** Последний экземпляр каждого client_id держится сильно, как раньше держался весь реестр */
+	protected static $_latest = [];
+	protected static $_sweep_at = 64;
 
 	/**
 	 * Constructor
@@ -219,6 +225,10 @@ class ApiClient
 	 */
 	public function setIntegration(string $key, $value)
 	{
+		// client_id и domain входят в ключ экземпляра, crm_host и ключи хранилищ токенов и кеша
+		if (in_array($key, ['client_id', 'domain']) && $value !== $this->_integration[$key]) {
+			throw new \LogicException('Integration ' . $key . ' can not be changed after client creation, use ApiClient::setInstance');
+		}
 		if (array_key_exists($key, $this->_integration)) {
 			$this->_integration[$key] = $value;
 		}
@@ -263,25 +273,64 @@ class ApiClient
 	}
 
 	/**
-	 * Разрешить ключ: составной как есть, голый client_id — если он один
+	 * Живые экземпляры по ключу: составной как есть, голый client_id — все его домены
 	 * @param string $key
-	 * @return string|null
+	 * @return ApiClient[] - ключ экземпляра => клиент
 	 */
 	protected static function resolveKey($key)
 	{
+		$keys = [];
 		if (isset(static::$_instances[$key])) {
-			return $key;
-		}
-		if (strpos($key, ':') !== false) {
-			return null;
-		}
-		$found = [];
-		foreach (array_keys(static::$_instances) as $existing) {
-			if (strpos($existing, $key . ':') === 0) {
-				$found[] = $existing;
+			$keys[] = $key;
+		} else if (strpos($key, ':') === false) {
+			foreach (array_keys(static::$_instances) as $existing) {
+				if (strpos($existing, $key . ':') === 0) {
+					$keys[] = $existing;
+				}
 			}
 		}
-		return count($found) === 1 ? $found[0] : null;
+		$found = [];
+		foreach ($keys as $existing) {
+			if ($instance = static::$_instances[$existing]->get()) {
+				$found[$existing] = $instance;
+			} else {
+				unset(static::$_instances[$existing]);
+			}
+		}
+		return $found;
+	}
+
+	/**
+	 * Внести экземпляр в индекс
+	 * @param ApiClient $instance
+	 * @return void
+	 */
+	protected static function register(ApiClient $instance)
+	{
+		// мёртвые ссылки чистим, когда индекс вырос вдвое с прошлой чистки
+		if (count(static::$_instances) >= static::$_sweep_at) {
+			foreach (static::$_instances as $key => $ref) {
+				if (!$ref->get()) {
+					unset(static::$_instances[$key]);
+				}
+			}
+			static::$_sweep_at = max(64, count(static::$_instances) * 2);
+		}
+		static::$_instances[$instance->getKey()] = \WeakReference::create($instance);
+		static::$_latest[$instance->getIntegration('client_id')] = $instance;
+	}
+
+	/**
+	 * Создать состояние экземпляра
+	 * @return void
+	 */
+	protected function _bootState()
+	{
+		$this->_callbacks = new Api\Callbacks($this);
+		$this->_oauth = new Api\Oauth($this);
+		$this->_cache = new Api\Cache($this);
+		$this->_queries = new Api\Queries();
+		$this->_queries->boot($this);
 	}
 
 	/**
@@ -306,18 +355,8 @@ class ApiClient
 		}
 		$instance = new static($account);
 		$instance->setParam('user_agent', 'Amoapi v4 (' . $account['client_id'] . ')');
-		$key = $instance->getKey();
-		// повторная регистрация того же ключа переносит его в конец (LRU)
-		static::removeInstance($key);
-		while (count(static::$_instances) >= static::MAX_INSTANCES) {
-			static::removeInstance(array_key_first(static::$_instances));
-		}
-		static::$_instances[$key] = $instance;
-		static::$_callbacks[$key] = new Api\Callbacks($instance);
-		static::$_oauth[$key] = new Api\Oauth($instance);
-		static::$_cache[$key] = new Api\Cache($instance);
-		static::$_queries[$key] = new Api\Queries();
-		static::$_queries[$key]->boot($instance);
+		$instance->_bootState();
+		static::register($instance);
 		return $instance;
 	}
 
@@ -328,39 +367,43 @@ class ApiClient
 	 */
 	public static function getInstance($key)
 	{
-		if (!$resolved = static::resolveKey($key)) {
-			throw new \Exception('Account not found: ' . $key);
+		$found = static::resolveKey($key);
+		if (count($found) > 1) {
+			throw new \Exception('Account is ambiguous: client_id ' . $key . ' has ' . count($found) . ' accounts (' . join(', ', array_keys($found)) . '), use ApiClient::instanceKey($client_id, $domain)');
 		}
-		return static::$_instances[$resolved];
+		if (!$found) {
+			throw new \Exception('Account not found: ' . $key . ' (not registered or client already released)');
+		}
+		return current($found);
 	}
 
 	/**
-	 * Has client isset
+	 * Has client isset: true, если getInstance вернёт клиента
 	 * @param string $key - client_id:domain или уникальный client_id
 	 * @return bool
 	 */
 	public static function hasInstance($key)
 	{
-		return static::resolveKey($key) !== null;
+		return count(static::resolveKey($key)) === 1;
 	}
 
 	/**
-	 * Remove client isset
+	 * Remove client from registry, the client itself keeps working for its owner
 	 * @param string $key - client_id:domain или уникальный client_id
 	 * @return void
 	 */
 	public static function removeInstance($key)
 	{
-		if (!$resolved = static::resolveKey($key)) {
+		$found = static::resolveKey($key);
+		if (count($found) !== 1) {
 			return;
 		}
-		unset(
-			static::$_instances[$resolved],
-			static::$_callbacks[$resolved],
-			static::$_oauth[$resolved],
-			static::$_cache[$resolved],
-			static::$_queries[$resolved]
-		);
+		$instance = current($found);
+		unset(static::$_instances[key($found)]);
+		$client_id = $instance->getIntegration('client_id');
+		if (isset(static::$_latest[$client_id]) && static::$_latest[$client_id] === $instance) {
+			unset(static::$_latest[$client_id]);
+		}
 	}
 
 	/**
@@ -384,13 +427,13 @@ class ApiClient
 	public function __get($target)
 	{
 		if ($target === 'queries') {
-			return static::$_queries[$this->getKey()];
+			return $this->_queries;
 		} else if ($target === 'callbacks') {
-			return static::$_callbacks[$this->getKey()];
+			return $this->_callbacks;
 		} else if ($target === 'oauth') {
-			return static::$_oauth[$this->getKey()];
+			return $this->_oauth;
 		} else if ($target === 'cache') {
-			return static::$_cache[$this->getKey()];
+			return $this->_cache;
 		} else if ($target === 'client_id') {
 			return $this->getIntegration('client_id');
 		} else if ($target === 'instance_key') {

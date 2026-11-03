@@ -22,6 +22,7 @@ class Notes extends Service
     public function __construct(ApiClient $client, array $args)
     {
         $this->client_id = $client->client_id;
+        $this->client = $client;
         $this->instance_key = $client->getKey();
         $this->api_entity_path = str_replace('{entity}', current($args), $this->api_entity_path);
         $entity_key = join('/', $args);
