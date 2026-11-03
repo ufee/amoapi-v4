@@ -11,8 +11,9 @@ class AbstractStorage
 	protected $client_id;
 	protected $key;
 	protected $options;
-	
-	protected static $_local = [];
+
+	/** Локальный кеш хранилища, null до initialize(): модели держат сервис и клиента, статический кеш не дал бы клиенту освободиться */
+	protected $_local = null;
 
 	/**
 	 * Constructor
@@ -33,7 +34,7 @@ class AbstractStorage
 	 */
 	public function initialize()
 	{
-		static::$_local[$this->key] = [];
+		$this->_local = [];
 	}
 
 	/**
@@ -43,10 +44,10 @@ class AbstractStorage
 	 */
 	public function has(string $key)
 	{
-		if (!array_key_exists($this->key, static::$_local)) {
+		if (is_null($this->_local)) {
 			$this->initialize();
 		}
-		return isset(static::$_local[$this->key][$key]);
+		return isset($this->_local[$key]);
 	}
 
 	/**
@@ -56,12 +57,12 @@ class AbstractStorage
 	 */
 	public function get(string $key)
 	{
-		if (!array_key_exists($this->key, static::$_local)) {
+		if (is_null($this->_local)) {
 			$this->initialize();
 		}
-		$data = static::$_local[$this->key][$key] ?? null;
+		$data = $this->_local[$key] ?? null;
 		if ($data && $data['expire_at'] < time()) {
-			unset(static::$_local[$this->key][$key]);
+			unset($this->_local[$key]);
 			$data = null;
 		}
 		return $data ? $data['payload'] : null;
@@ -76,11 +77,11 @@ class AbstractStorage
 	 */
 	public function set(string $key, object $object, int $ttl = 60)
 	{
-		if (!array_key_exists($this->key, static::$_local)) {
+		if (is_null($this->_local)) {
 			$this->initialize();
 		}
 		$data = ['expire_at' => time()+$ttl, 'payload' => $object];
-		static::$_local[$this->key][$key] = $data;
+		$this->_local[$key] = $data;
 
 		return true;
 	}
@@ -92,13 +93,13 @@ class AbstractStorage
 	 */
 	public function clear($key = null)
 	{
-		if (!array_key_exists($this->key, static::$_local)) {
+		if (is_null($this->_local)) {
 			$this->initialize();
 		}
 		if (is_string($key)) {
-			static::$_local[$this->key][$key] = null;
+			$this->_local[$key] = null;
 		} else {
-			static::$_local[$this->key] = [];
+			$this->_local = [];
 		}
 		return true;
 	}

@@ -322,10 +322,9 @@ class CoverageRound4Test extends TestCase
 		$ref = new \ReflectionClass(CacheAbstractStorage::class);
 		$local = $ref->getProperty('_local');
 		$local->setAccessible(true);
-		$all = $local->getValue(null);
-		$key = 'disk-cache_' . $api->client_id;
-		unset($all[$key]['item']);
-		$local->setValue(null, $all);
+		$all = $local->getValue($storage);
+		unset($all['item']);
+		$local->setValue($storage, $all);
 
 		$this->assertTrue($storage->has('item'));
 		$this->assertSame(9, $storage->get('item')->id);
@@ -335,9 +334,9 @@ class CoverageRound4Test extends TestCase
 			'expire_at' => time() - 10,
 			'payload' => (object) ['id' => 1],
 		]));
-		$all = $local->getValue(null);
-		unset($all[$key]['stale']);
-		$local->setValue(null, $all);
+		$all = $local->getValue($storage);
+		unset($all['stale']);
+		$local->setValue($storage, $all);
 		$this->assertNull($storage->get('stale'));
 		$this->assertFileDoesNotExist($path);
 	}

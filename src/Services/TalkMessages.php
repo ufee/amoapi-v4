@@ -106,8 +106,6 @@ class TalkMessages extends Service
 	 */
 	public function __construct(ApiClient $client, array $args)
 	{
-		$this->client_id = $client->client_id;
-
 		if (count($args) < 1) {
 			throw new \InvalidArgumentException('TalkMessages Service required talk_id argument');
 		}
@@ -121,7 +119,7 @@ class TalkMessages extends Service
 		}
 
 		$this->api_path = str_replace('{id}', (string)$talk_id, $this->api_path);
-		$this->_boot();
+		parent::__construct($client);
 	}
 
 	/**

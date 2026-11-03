@@ -18,6 +18,9 @@ use Ufee\AmoV4\Exceptions;
 class Oauth
 {
 	protected $client_id;
+	protected $instance_key;
+	/** @var ApiClient - владелец, экземпляр не переживает клиента */
+	protected $client;
 	protected $storage;
 	protected $last_access = 0;
 
@@ -28,6 +31,8 @@ class Oauth
 	public function __construct(ApiClient $client)
 	{
 		$this->client_id = $client->client_id;
+		$this->client = $client;
+		$this->instance_key = $client->getKey();
 		$this->setStorage(new FileStorage($client, ['path' => AMOV4API_ROOT . '/Temp']));
 	}
 
@@ -270,7 +275,7 @@ class Oauth
 	public function __get($target)
 	{
 		if ($target === 'instance') {
-			return ApiClient::getInstance($this->client_id);
+			return $this->client;
 		} else if (!isset($this->{$target})) {
 			throw new \Exception('Invalid Oauth field: ' . $target);
 		}

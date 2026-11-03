@@ -20,8 +20,6 @@ class Subscriptions extends Service
 	 */
 	public function __construct(ApiClient $client, array $args)
 	{
-		$this->client_id = $client->client_id;
-
 		if (count($args) < 2) {
 			throw new \InvalidArgumentException('Subscriptions Service required entity_type and entity_id arguments');
 		}
@@ -41,6 +39,6 @@ class Subscriptions extends Service
 			$this->api_path
 		);
 
-		$this->_boot();
+		parent::__construct($client);
 	}
 }
