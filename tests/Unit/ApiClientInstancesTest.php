@@ -103,8 +103,14 @@ final class ApiClientInstancesTest extends TestCase
 
 		$b = $this->make('solo', 'beta');
 		self::assertFalse(ApiClient::hasInstance('solo'));
-		ApiClient::removeInstance('solo');
+		try {
+			ApiClient::removeInstance('solo');
+			self::fail('removeInstance must reject ambiguous client_id');
+		} catch (\Exception $e) {
+			self::assertStringContainsString('Account is ambiguous', $e->getMessage());
+		}
 		self::assertSame($a, ApiClient::getInstance('solo:alpha'));
+		self::assertSame($b, ApiClient::getInstance('solo:beta'));
 
 		$this->expectException(\Exception::class);
 		$this->expectExceptionMessage('Account is ambiguous: client_id solo has 2 accounts (solo:alpha, solo:beta)');
@@ -136,22 +142,49 @@ final class ApiClientInstancesTest extends TestCase
 
 	public function testReleasedClientsAreFreed(): void
 	{
-		// первый проход прогревает автозагрузку и кеши движка
-		$this->makeReleased('free', 1, 1000);
+		$this->makeReleased('free', 1, 2000);
+		// отпущенный клиент в цикле ссылок виден в реестре до прохода сборщика циклов;
+		// цикл, который сборщик застал живым, освобождается после следующего обращения к нему
 		gc_collect_cycles();
-		$before = memory_get_usage();
-
-		$this->makeReleased('free', 1001, 2000);
+		for ($i = 1; $i < 2000; $i++) {
+			ApiClient::hasInstance(ApiClient::instanceKey('free', 'd' . $i));
+		}
 		gc_collect_cycles();
-		$growth = memory_get_usage() - $before;
 
-		for ($i = 1001; $i < 2000; $i++) {
+		for ($i = 1; $i < 2000; $i++) {
 			self::assertFalse(ApiClient::hasInstance(ApiClient::instanceKey('free', 'd' . $i)), 'd' . $i);
 		}
 		// последний экземпляр client_id держится, как держался весь реестр до составного ключа
 		self::assertTrue(ApiClient::hasInstance(ApiClient::instanceKey('free', 'd2000')));
-		// тысяча живых клиентов заняла бы мегабайты, индекс мёртвых ключей — десятки килобайт
-		self::assertLessThan(512 * 1024, $growth, 'memory growth ' . $growth);
+
+		// мёртвые ключи вычищаются при росте индекса: он не копит все когда-либо виденные аккаунты
+		$index = new \ReflectionProperty(ApiClient::class, '_instances');
+		$index->setAccessible(true);
+		self::assertLessThan(200, count($index->getValue()));
+	}
+
+	public function testLegacySerializedServiceAndQueryResolveByClientId(): void
+	{
+		// записи кеша до составного ключа: у сервиса и запроса есть только client_id
+		$client = $this->make('legacy', 'alpha');
+
+		$service = $client->leads();
+		$key = new \ReflectionProperty(Leads::class, 'instance_key');
+		$key->setAccessible(true);
+		$key->setValue($service, null);
+		$restored = unserialize(serialize($service));
+		self::assertSame($client, $restored->instance);
+
+		$query = $client->query('GET', '/api/v4/leads');
+		$attributes = new \ReflectionProperty(Api\Query::class, 'attributes');
+		$attributes->setAccessible(true);
+		$values = $attributes->getValue($query);
+		unset($values['instance_key']);
+		$values['curl'] = null;
+		$attributes->setValue($query, $values);
+		$restored = unserialize(serialize($query));
+		self::assertSame('legacy', $restored->instance_key);
+		self::assertSame($client, $restored->instance);
 	}
 
 	public function testSerializedServiceFindsClientThroughRegistry(): void

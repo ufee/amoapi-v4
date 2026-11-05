@@ -23,6 +23,16 @@ class RedisStorage extends AbstractStorage
 	}
 	
 	/**
+	 * Redis key of cached data
+	 * @param string $key
+	 * @return string
+	 */
+	protected function storageKey(string $key)
+	{
+		return $this->domain . ':' . $this->client_id . ':' . static::FORMAT . ':' . $key;
+	}
+
+	/**
 	 * Check cached data
 	 * @param string $key
 	 * @return bool
@@ -32,7 +42,7 @@ class RedisStorage extends AbstractStorage
 		if (parent::has($key)) {
 			return true;
 		}
-		return $this->options['connection']->exists($this->domain . ':' . $this->client_id.':'.$key);
+		return $this->options['connection']->exists($this->storageKey($key));
 	}
 
 	/**
@@ -45,7 +55,7 @@ class RedisStorage extends AbstractStorage
 		if ($payload = parent::get($key)) {
 			return $payload;
 		}
-		return $this->options['connection']->get($this->domain . ':' . $this->client_id.':'.$key);
+		return $this->options['connection']->get($this->storageKey($key));
 	}
 
 	/**
@@ -59,7 +69,7 @@ class RedisStorage extends AbstractStorage
 	{
 		parent::set($key, $object, $ttl);
 		
-		return $this->options['connection']->setEx($this->domain . ':' . $this->client_id.':'.$key, $ttl, $object);
+		return $this->options['connection']->setEx($this->storageKey($key), $ttl, $object);
 	}
 
 	/**
@@ -72,7 +82,7 @@ class RedisStorage extends AbstractStorage
 		parent::clear($key);
 		
 		if (is_string($key)) {
-			$this->options['connection']->del($this->domain . ':' . $this->client_id.':'.$key);
+			$this->options['connection']->del($this->storageKey($key));
 		} else {
 			$keys = $this->options['connection']->keys($this->domain . ':' . $this->client_id.':*');
 			foreach ($keys as $key) {

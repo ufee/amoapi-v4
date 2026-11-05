@@ -38,7 +38,7 @@ class CacheFileStorageTest extends TestCase
 		$this->assertTrue($storage->has('account'));
 		$this->assertSame(1, $storage->get('account')->id);
 
-		$path = $this->tempDir . '/cache-test/' . $api->client_id . '-account.cache';
+		$path = $this->tempDir . '/cache-test/' . $api->client_id . '-' . FileStorage::FORMAT . '-account.cache';
 		$this->assertFileExists($path);
 
 		$storage->clear('account');
@@ -54,7 +54,7 @@ class CacheFileStorageTest extends TestCase
 		$storage->initialize();
 
 		$key = 'pipelines';
-		$path = $this->tempDir . '/cache-expire/' . $api->client_id . '-' . $key . '.cache';
+		$path = $this->tempDir . '/cache-expire/' . $api->client_id . '-' . FileStorage::FORMAT . '-' . $key . '.cache';
 		file_put_contents($path, serialize([
 			'expire_at' => time() - 1,
 			'payload' => (object) ['stale' => true],
@@ -87,5 +87,27 @@ class CacheFileStorageTest extends TestCase
 		$this->assertNull($storage->get('a'));
 		$this->assertNull($storage->get('b'));
 		$this->assertSame([], glob($this->tempDir . '/cache-all/' . $api->client_id . '-*.cache') ?: []);
+	}
+
+	public function testLegacyFormatFileIsSkipped(): void
+	{
+		$api = $this->makeApiClient(['domain' => 'cache-legacy']);
+		$this->tempDir = sys_get_temp_dir() . '/amoapi-cache-legacy-' . uniqid('', true);
+		$storage = new FileStorage($api, ['path' => $this->tempDir]);
+		$storage->initialize();
+
+		// запись прежнего формата: модели в ней держат сервис без составного ключа
+		$legacy = $this->tempDir . '/cache-legacy/' . $api->client_id . '-account.cache';
+		file_put_contents($legacy, serialize([
+			'expire_at' => time() + 60,
+			'payload' => (object) ['legacy' => true],
+		]));
+
+		$this->assertFalse($storage->has('account'));
+		$this->assertNull($storage->get('account'));
+
+		// полная очистка убирает и записи прежнего формата
+		$storage->clear();
+		$this->assertFileDoesNotExist($legacy);
 	}
 }

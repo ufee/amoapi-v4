@@ -605,6 +605,17 @@ class Query
 	}
 
 	/**
+	 * Restore without client: записи до составного ключа хранят только client_id
+	 * @return void
+	 */
+	public function __wakeup()
+	{
+		if (empty($this->attributes['instance_key'])) {
+			$this->attributes['instance_key'] = $this->attributes['client_id'] ?? null;
+		}
+	}
+
+	/**
 	 * Close curl
 	 */
 	public function __destruct()

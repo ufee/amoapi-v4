@@ -7,6 +7,9 @@ use Ufee\AmoV4\ApiClient;
 
 class AbstractStorage
 {
+	/** Версия формата записей: модели прежних версий не восстанавливаются, их записи пропускаются */
+	const FORMAT = 'v2';
+
 	protected $domain;
 	protected $client_id;
 	protected $key;

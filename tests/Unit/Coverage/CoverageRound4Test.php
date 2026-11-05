@@ -329,7 +329,7 @@ class CoverageRound4Test extends TestCase
 		$this->assertTrue($storage->has('item'));
 		$this->assertSame(9, $storage->get('item')->id);
 
-		$path = $this->tempDir . '/disk-cache/' . $api->client_id . '-stale.cache';
+		$path = $this->tempDir . '/disk-cache/' . $api->client_id . '-' . FileStorage::FORMAT . '-stale.cache';
 		file_put_contents($path, serialize([
 			'expire_at' => time() - 10,
 			'payload' => (object) ['id' => 1],
