@@ -338,4 +338,13 @@ class Service
 	{
 		return array_values(array_diff(array_keys(get_object_vars($this)), ['client']));
 	}
+
+	/**
+	 * Restore without client: записи до составного ключа хранят только client_id
+	 * @return void
+	 */
+	public function __wakeup()
+	{
+		$this->instance_key = $this->instance_key ?: $this->client_id;
+	}
 }

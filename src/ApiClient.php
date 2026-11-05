@@ -301,6 +301,17 @@ class ApiClient
 	}
 
 	/**
+	 * Ошибка неоднозначного голого client_id
+	 * @param string $key
+	 * @param ApiClient[] $found
+	 * @return \Exception
+	 */
+	protected static function ambiguous($key, array $found)
+	{
+		return new \Exception('Account is ambiguous: client_id ' . $key . ' has ' . count($found) . ' accounts (' . join(', ', array_keys($found)) . '), use ApiClient::instanceKey($client_id, $domain)');
+	}
+
+	/**
 	 * Внести экземпляр в индекс
 	 * @param ApiClient $instance
 	 * @return void
@@ -369,7 +380,7 @@ class ApiClient
 	{
 		$found = static::resolveKey($key);
 		if (count($found) > 1) {
-			throw new \Exception('Account is ambiguous: client_id ' . $key . ' has ' . count($found) . ' accounts (' . join(', ', array_keys($found)) . '), use ApiClient::instanceKey($client_id, $domain)');
+			throw static::ambiguous($key, $found);
 		}
 		if (!$found) {
 			throw new \Exception('Account not found: ' . $key . ' (not registered or client already released)');
@@ -391,11 +402,15 @@ class ApiClient
 	 * Remove client from registry, the client itself keeps working for its owner
 	 * @param string $key - client_id:domain или уникальный client_id
 	 * @return void
+	 * @throws \Exception - client_id с несколькими аккаунтами
 	 */
 	public static function removeInstance($key)
 	{
 		$found = static::resolveKey($key);
-		if (count($found) !== 1) {
+		if (count($found) > 1) {
+			throw static::ambiguous($key, $found);
+		}
+		if (!$found) {
 			return;
 		}
 		$instance = current($found);

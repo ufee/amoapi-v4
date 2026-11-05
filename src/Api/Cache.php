@@ -17,7 +17,6 @@ use Ufee\AmoV4\Collections;
 class Cache
 {
 	protected $client_id;
-	protected $instance_key;
 	/** @var ApiClient - владелец, экземпляр не переживает клиента */
 	protected $client;
 	protected $storage;
@@ -43,7 +42,6 @@ class Cache
 	{
 		$this->client_id = $client->client_id;
 		$this->client = $client;
-		$this->instance_key = $client->getKey();
 		$this->setStorage(new FileStorage($client, ['path' => AMOV4API_ROOT . '/Temp']));
 	}
 

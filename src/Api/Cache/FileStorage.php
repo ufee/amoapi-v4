@@ -43,6 +43,16 @@ class FileStorage extends AbstractStorage
 	}
 
 	/**
+	 * File path of cached data
+	 * @param string $key
+	 * @return string
+	 */
+	protected function storageKey(string $key)
+	{
+		return $this->options['path'] . '/' . $this->domain . '/' . $this->client_id . '-' . static::FORMAT . '-' . $key . '.cache';
+	}
+
+	/**
 	 * Check cached data
 	 * @param string $key
 	 * @return bool
@@ -52,7 +62,7 @@ class FileStorage extends AbstractStorage
 		if (parent::has($key)) {
 			return true;
 		}
-		return file_exists($this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache');
+		return file_exists($this->storageKey($key));
 	}
 
 	/**
@@ -65,14 +75,14 @@ class FileStorage extends AbstractStorage
 		if ($payload = parent::get($key)) {
 			return $payload;
 		}
-		if (!file_exists($this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache')) {
+		if (!file_exists($this->storageKey($key))) {
 			return null;
 		}
-		$contents = file_get_contents($this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache');
+		$contents = file_get_contents($this->storageKey($key));
 		$unserialize = $this->options['unserialize'];
 		if ($contents && ($data = $unserialize($contents))) {
 			if ($data['expire_at'] < time()) {
-				@unlink($this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache');
+				@unlink($this->storageKey($key));
 				$data = null;
 			}
 		}
@@ -93,7 +103,7 @@ class FileStorage extends AbstractStorage
 		$serialize = $this->options['serialize'];
 		
 		return file_put_contents(
-			$this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache',
+			$this->storageKey($key),
 			$serialize($data)
 		);
 	}
@@ -108,7 +118,7 @@ class FileStorage extends AbstractStorage
 		parent::clear($key);
 		
 		if (is_string($key)) {
-			$cache_path = $this->options['path'] . '/' . $this->domain . '/' . $this->client_id.'-'.$key.'.cache';
+			$cache_path = $this->storageKey($key);
 			if (file_exists($cache_path)) {
 				@unlink($cache_path);
 			}
