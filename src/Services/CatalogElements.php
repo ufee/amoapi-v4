@@ -34,10 +34,9 @@ class CatalogElements extends Service
 		if (!$catalog_id = (int)current($args)) {
 			throw new \InvalidArgumentException('CatalogElements Service required catalog_id argument');
 		}
-		$this->client_id = $client->client_id;
 		$this->catalog_id = $catalog_id;
 		$this->api_path = str_replace('{catalog_id}', $catalog_id, $this->api_path);
-		$this->_boot();
+		parent::__construct($client);
 	}
 
 	/**

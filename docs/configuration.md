@@ -16,16 +16,24 @@ $api = \Ufee\AmoV4\ApiClient::setInstance([
 
 ## Мультиаккаунтность
 
-Каждый `client_id` — отдельный экземпляр клиента.
+Экземпляр клиента определяется парой `client_id` и `domain`: одна интеграция может обслуживать много аккаунтов.
 
 ```php
-$apiA = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = A
-$apiB = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = B
+$apiA = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = X, domain = a
+$apiB = \Ufee\AmoV4\ApiClient::setInstance([...]); // client_id = X, domain = b
 
-$apiA = \Ufee\AmoV4\ApiClient::getInstance($client_id_a);
-$exists = \Ufee\AmoV4\ApiClient::hasInstance($client_id_a);
-\Ufee\AmoV4\ApiClient::removeInstance($client_id_a);
+$apiA = \Ufee\AmoV4\ApiClient::getInstance(\Ufee\AmoV4\ApiClient::instanceKey($client_id, 'a'));
+$exists = \Ufee\AmoV4\ApiClient::hasInstance($apiA->getKey());
+\Ufee\AmoV4\ApiClient::removeInstance($apiA->getKey());
 ```
+
+Голый `client_id` в `getInstance` и `removeInstance` разрешается, только если под ним один живой аккаунт, иначе исключение о неоднозначности.
+
+Реестр не владеет клиентами: клиент живёт, пока на него есть ссылка у приложения. Сильно держится только последний зарегистрированный клиент каждого `client_id`. Сервисы, модели и запросы ссылаются на своего клиента напрямую, поэтому клиент, выпавший из реестра, продолжает работать у владельца. `domain` и `client_id` после создания не меняются: для другого аккаунта вызывайте `setInstance`.
+
+Отпущенный клиент не исчезает из реестра сразу. Клиент и его `oauth`, `cache`, `callbacks` ссылаются друг на друга, поэтому память освобождает сборщик циклов PHP (`gc_collect_cycles()` или автоматический проход), иногда со второго прохода. До этого `hasInstance` и `getInstance` ещё находят клиента — того же аккаунта, чужой не вернётся.
+
+Кеш в памяти у каждого экземпляра свой: повторный `setInstance` того же аккаунта начинает с пустым локальным кешем и читает данные из хранилища.
 
 ## Настройка параметров (опционально)
 
@@ -135,7 +143,7 @@ $api->cache->setTtl([
 
 ### Файловое хранение кеша
 
-Используется по умолчанию: `/src/Temp/{domain}/{client_id}-{key}.cache`
+Используется по умолчанию: `/src/Temp/{domain}/{client_id}-v2-{key}.cache` (`v2` — версия формата записей, `FileStorage::FORMAT`)
 
 ```php
 $api->cache->setStorageFiles('/path/to/cache/storage', [
@@ -152,7 +160,7 @@ $api->cache->clear('pipelines'); // конкретный ключ
 ```
 
 Очистка затрагивает оба слоя: локальный кеш в памяти процесса и постоянное хранилище
-(файлы `{path}/{domain}/{client_id}-{key}.cache` либо ключи Redis `{domain}:{client_id}:{key}`).
+(файлы `{path}/{domain}/{client_id}-v2-{key}.cache` либо ключи Redis `{domain}:{client_id}:v2:{key}`).
 
 Ключи без параметров:
 

@@ -17,6 +17,8 @@ use Ufee\AmoV4\Collections;
 class Cache
 {
 	protected $client_id;
+	/** @var ApiClient - владелец, экземпляр не переживает клиента */
+	protected $client;
 	protected $storage;
 
 	protected $ttl = [
@@ -39,6 +41,7 @@ class Cache
 	public function __construct(ApiClient $client)
 	{
 		$this->client_id = $client->client_id;
+		$this->client = $client;
 		$this->setStorage(new FileStorage($client, ['path' => AMOV4API_ROOT . '/Temp']));
 	}
 
@@ -333,7 +336,7 @@ class Cache
 	public function __get($target)
 	{
 		if ($target === 'instance') {
-			return ApiClient::getInstance($this->client_id);
+			return $this->client;
 		} else if (!isset($this->{$target})) {
 			throw new \Exception('Invalid Cache field: ' . $target);
 		}

@@ -32,11 +32,14 @@ class Query
 	],
 	$hidden = [
 		'client_id',
+		'instance_key',
 		'service',
 		'curl',
 		'response'
 	],
 	$attributes = [];
+	/** @var ApiClient|null - не сериализуется, после восстановления клиент ищется по instance_key */
+	protected $client;
 
 	/**
 	 * Constructor
@@ -51,7 +54,9 @@ class Query
 		foreach ($this->hidden as $field_key) {
 			$this->attributes[$field_key] = null;
 		}
+		$this->client = $instance;
 		$this->attributes['client_id'] = $instance->getIntegration('client_id');
+		$this->attributes['instance_key'] = $instance->getKey();
 		$this->attributes['service'] = $service_class;
 		$this->attributes['retry'] = true;
 		$this->attributes['retries'] = 0;
@@ -569,7 +574,7 @@ class Query
 	public function __get($field)
 	{
 		if ($field === 'instance') {
-			return ApiClient::getInstance($this->client_id);
+			return $this->client ?: ApiClient::getInstance($this->instance_key);
 		}
 		if (!array_key_exists($field, $this->attributes)) {
 			throw new \Exception('Invalid Query field: ' . $field);
@@ -588,6 +593,26 @@ class Query
 			throw new \Exception('Invalid Query field: ' . $field);
 		}
 		throw new \Exception('Protected Query field set fail: ' . $field);
+	}
+
+	/**
+	 * Serialize without client
+	 * @return array
+	 */
+	public function __sleep()
+	{
+		return ['system', 'hidden', 'attributes'];
+	}
+
+	/**
+	 * Restore without client: записи до составного ключа хранят только client_id
+	 * @return void
+	 */
+	public function __wakeup()
+	{
+		if (empty($this->attributes['instance_key'])) {
+			$this->attributes['instance_key'] = $this->attributes['client_id'] ?? null;
+		}
 	}
 
 	/**

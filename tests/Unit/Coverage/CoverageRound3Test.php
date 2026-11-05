@@ -251,7 +251,7 @@ class CoverageRound3Test extends TestCase
 		$this->assertSame(1, $storage->get('k1')->ok);
 
 		// только Redis, без локального кеша
-		$redisKey = $api->getIntegration('domain') . ':' . $api->client_id . ':k2';
+		$redisKey = $api->getIntegration('domain') . ':' . $api->client_id . ':' . CacheRedisStorage::FORMAT . ':k2';
 		$redis->setEx($redisKey, 30, (object) ['ok' => 2]);
 		$fromRedis = new CacheRedisStorage($api, ['connection' => $redis]);
 		$this->assertTrue((bool) $fromRedis->has('k2'));
