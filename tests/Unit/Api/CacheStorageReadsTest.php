@@ -82,6 +82,8 @@ class CacheStorageReadsTest extends TestCase
 		$redis->setEx($this->redisKey($api, 'expired'), 60, ['expire_at' => time() - 1, 'payload' => (object) []]);
 
 		$storage = new RedisStorage($api, ['connection' => $redis]);
+		$this->assertFalse($storage->has('old'));
+		$this->assertFalse($storage->has('expired'));
 		$this->assertNull($storage->get('old'));
 		$this->assertNull($storage->get('expired'));
 		$this->assertNull($storage->get('missing'));
@@ -126,10 +128,22 @@ class CacheStorageReadsTest extends TestCase
 		file_put_contents($path, '');
 		$this->assertNull($fresh->get('users'));
 
-		// просроченная запись удаляется
+		$this->assertFalse($fresh->has('users'));
+
+		// просроченная запись: has() и get() согласованы, файл удаляется
+		file_put_contents($path, serialize(['expire_at' => time() - 1, 'payload' => (object) []]));
+		$this->assertFalse($fresh->has('users'));
+		$this->assertFileDoesNotExist($path);
 		file_put_contents($path, serialize(['expire_at' => time() - 1, 'payload' => (object) []]));
 		$this->assertNull($fresh->get('users'));
 		$this->assertFileDoesNotExist($path);
+
+		// живая запись: has() читает файл один раз, дальше память
+		(new FileStorage($api, ['path' => $this->dir]))->set('users', (object) ['id' => 8], 60);
+		$warm = new FileStorage($api, ['path' => $this->dir]);
+		$this->assertTrue($warm->has('users'));
+		unlink($path);
+		$this->assertSame(8, $warm->get('users')->id);
 	}
 
 	public function testHasRespectsExpiry(): void

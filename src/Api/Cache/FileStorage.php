@@ -53,16 +53,13 @@ class FileStorage extends AbstractStorage
 	}
 
 	/**
-	 * Check cached data
+	 * Check cached data: same check as get() (expiry, broken file), the record stays in local cache
 	 * @param string $key
 	 * @return bool
 	 */
 	public function has(string $key)
 	{
-		if (parent::has($key)) {
-			return true;
-		}
-		return file_exists($this->storageKey($key));
+		return $this->get($key) !== null;
 	}
 
 	/**

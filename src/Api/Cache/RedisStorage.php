@@ -38,16 +38,13 @@ class RedisStorage extends AbstractStorage
 	}
 
 	/**
-	 * Check cached data
+	 * Check cached data: same check as get() (envelope, expiry), the record stays in local cache
 	 * @param string $key
 	 * @return bool
 	 */
 	public function has(string $key)
 	{
-		if (parent::has($key)) {
-			return true;
-		}
-		return (bool)$this->options['connection']->exists($this->storageKey($key));
+		return $this->get($key) !== null;
 	}
 
 	/**
