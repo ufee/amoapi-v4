@@ -241,7 +241,7 @@ class CoverageRound3Test extends TestCase
 			$this->assertStringContainsString('Redis', $e->getMessage());
 		}
 
-		$redis = new \Redis();
+		$redis = new \Ufee\AmoV4\Tests\Support\CountingRedis();
 		$storage = new CacheRedisStorage($api, ['connection' => $redis]);
 		$storage->initialize();
 
@@ -252,7 +252,7 @@ class CoverageRound3Test extends TestCase
 
 		// только Redis, без локального кеша
 		$redisKey = $api->getIntegration('domain') . ':' . $api->client_id . ':' . CacheRedisStorage::FORMAT . ':k2';
-		$redis->setEx($redisKey, 30, (object) ['ok' => 2]);
+		$redis->setEx($redisKey, 30, ['expire_at' => time() + 30, 'payload' => (object) ['ok' => 2]]);
 		$fromRedis = new CacheRedisStorage($api, ['connection' => $redis]);
 		$this->assertTrue((bool) $fromRedis->has('k2'));
 		$this->assertSame(2, $fromRedis->get('k2')->ok);

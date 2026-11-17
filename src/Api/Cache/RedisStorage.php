@@ -4,10 +4,15 @@
  */
 namespace Ufee\AmoV4\Api\Cache;
 use Ufee\AmoV4\ApiClient;
-use Ufee\AmoV4\Base\Models\QueryModel;
 
 class RedisStorage extends AbstractStorage
 {
+	/** v3: в Redis лежит конверт {expire_at, payload}, записи v2 (голый payload) не читаются и истекают сами */
+	const FORMAT = 'v3';
+
+	/** Ключей за один SCAN при очистке */
+	const SCAN_COUNT = 500;
+
 	/**
 	 * Constructor
 	 * @param ApiClient $client
@@ -21,7 +26,7 @@ class RedisStorage extends AbstractStorage
 			throw new \InvalidArgumentException('Redis Storage options[connection] must be instance of \Redis');
 		}
 	}
-	
+
 	/**
 	 * Redis key of cached data
 	 * @param string $key
@@ -42,11 +47,11 @@ class RedisStorage extends AbstractStorage
 		if (parent::has($key)) {
 			return true;
 		}
-		return $this->options['connection']->exists($this->storageKey($key));
+		return (bool)$this->options['connection']->exists($this->storageKey($key));
 	}
 
 	/**
-	 * Get cached data
+	 * Get cached data: Redis is read once per key, then from local cache
 	 * @param string $key
 	 * @return object|null
 	 */
@@ -55,7 +60,9 @@ class RedisStorage extends AbstractStorage
 		if ($payload = parent::get($key)) {
 			return $payload;
 		}
-		return $this->options['connection']->get($this->storageKey($key));
+		$data = $this->unpack($this->options['connection']->get($this->storageKey($key)));
+
+		return $data ? $this->remember($key, $data) : null;
 	}
 
 	/**
@@ -68,8 +75,8 @@ class RedisStorage extends AbstractStorage
 	public function set(string $key, object $object, int $ttl = 60)
 	{
 		parent::set($key, $object, $ttl);
-		
-		return $this->options['connection']->setEx($this->storageKey($key), $ttl, $object);
+
+		return $this->options['connection']->setEx($this->storageKey($key), $ttl, $this->envelope($object, $ttl));
 	}
 
 	/**
@@ -80,15 +87,22 @@ class RedisStorage extends AbstractStorage
 	public function clear($key = null)
 	{
 		parent::clear($key);
-		
+		$connection = $this->options['connection'];
+
 		if (is_string($key)) {
-			$this->options['connection']->del($this->storageKey($key));
-		} else {
-			$keys = $this->options['connection']->keys($this->domain . ':' . $this->client_id.':*');
-			foreach ($keys as $key) {
-				$this->options['connection']->del($key);
-			}
+			$connection->del($this->storageKey($key));
+			return true;
 		}
+		// SCAN вместо KEYS: KEYS блокирует Redis на всё время обхода базы
+		$pattern = $this->domain . ':' . $this->client_id . ':*';
+		$iterator = null;
+		do {
+			$keys = $connection->scan($iterator, $pattern, static::SCAN_COUNT);
+			if ($keys) {
+				$connection->del($keys);
+			}
+		} while ($iterator > 0);
+
 		return true;
 	}
 }

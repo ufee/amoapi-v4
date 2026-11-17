@@ -50,7 +50,8 @@ class AbstractStorage
 		if (is_null($this->_local)) {
 			$this->initialize();
 		}
-		return isset($this->_local[$key]);
+		$data = $this->_local[$key] ?? null;
+		return $data && $data['expire_at'] >= time();
 	}
 
 	/**
@@ -83,10 +84,48 @@ class AbstractStorage
 		if (is_null($this->_local)) {
 			$this->initialize();
 		}
-		$data = ['expire_at' => time()+$ttl, 'payload' => $object];
-		$this->_local[$key] = $data;
+		$this->_local[$key] = $this->envelope($object, $ttl);
 
 		return true;
+	}
+
+	/**
+	 * Cache record: payload with expiration time
+	 * @param object $object
+	 * @param int $ttl
+	 * @return array
+	 */
+	protected function envelope(object $object, int $ttl)
+	{
+		return ['expire_at' => time()+$ttl, 'payload' => $object];
+	}
+
+	/**
+	 * Valid unexpired record from storage, otherwise null
+	 * @param mixed $data
+	 * @return array|null
+	 */
+	protected function unpack($data)
+	{
+		if (!is_array($data) || !isset($data['expire_at'], $data['payload']) || !is_object($data['payload'])) {
+			return null;
+		}
+		return $data['expire_at'] < time() ? null : $data;
+	}
+
+	/**
+	 * Keep record read from storage in local cache: repeat reads skip the storage
+	 * @param string $key
+	 * @param array $data
+	 * @return object
+	 */
+	protected function remember(string $key, array $data)
+	{
+		if (is_null($this->_local)) {
+			$this->initialize();
+		}
+		$this->_local[$key] = $data;
+		return $data['payload'];
 	}
 
 	/**
