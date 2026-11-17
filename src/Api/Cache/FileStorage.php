@@ -53,16 +53,13 @@ class FileStorage extends AbstractStorage
 	}
 
 	/**
-	 * Check cached data
+	 * Check cached data: same check as get() (expiry, broken file), the record stays in local cache
 	 * @param string $key
 	 * @return bool
 	 */
 	public function has(string $key)
 	{
-		if (parent::has($key)) {
-			return true;
-		}
-		return file_exists($this->storageKey($key));
+		return $this->get($key) !== null;
 	}
 
 	/**
@@ -75,18 +72,21 @@ class FileStorage extends AbstractStorage
 		if ($payload = parent::get($key)) {
 			return $payload;
 		}
-		if (!file_exists($this->storageKey($key))) {
+		$path = $this->storageKey($key);
+		if (!is_file($path)) {
 			return null;
 		}
-		$contents = file_get_contents($this->storageKey($key));
+		$contents = @file_get_contents($path);
 		$unserialize = $this->options['unserialize'];
-		if ($contents && ($data = $unserialize($contents))) {
-			if ($data['expire_at'] < time()) {
-				@unlink($this->storageKey($key));
-				$data = null;
+		$raw = $contents ? @$unserialize($contents) : null;
+		if (!$data = $this->unpack($raw)) {
+			// удаляем только просроченную: пустой файл может быть записью другого процесса в моменте
+			if (is_array($raw) && isset($raw['expire_at']) && $raw['expire_at'] < time()) {
+				@unlink($path);
 			}
+			return null;
 		}
-		return $data ? $data['payload'] : null;
+		return $this->remember($key, $data);
 	}
 
 	/**
@@ -99,7 +99,7 @@ class FileStorage extends AbstractStorage
 	public function set(string $key, object $object, int $ttl = 60)
 	{
 		parent::set($key, $object, $ttl);
-		$data = ['expire_at' => time()+$ttl, 'payload' => $object];
+		$data = $this->envelope($object, $ttl);
 		$serialize = $this->options['serialize'];
 		
 		return file_put_contents(

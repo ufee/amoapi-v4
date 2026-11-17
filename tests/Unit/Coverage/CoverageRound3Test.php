@@ -214,7 +214,8 @@ class CoverageRound3Test extends TestCase
 			$this->assertStringContainsString('Redis', $e->getMessage());
 		}
 
-		$redis = new \Redis();
+		// без живого Redis: phpredis 6 без connect() сам подключается к 127.0.0.1:6379
+		$redis = new \Ufee\AmoV4\Tests\Support\CountingRedis();
 		$storage = new OauthRedisStorage($api, ['connection' => $redis]);
 		$oauth = [
 			'token_type' => 'Bearer',
@@ -227,7 +228,7 @@ class CoverageRound3Test extends TestCase
 		$this->assertSame('ra', $storage->getRaw()['access_token']);
 
 		$emptyApi = $this->makeApiClient(['domain' => 'redis-oauth-empty']);
-		$this->assertFalse((new OauthRedisStorage($emptyApi, ['connection' => new \Redis()]))->getRaw());
+		$this->assertFalse((new OauthRedisStorage($emptyApi, ['connection' => new \Ufee\AmoV4\Tests\Support\CountingRedis()]))->getRaw());
 	}
 
 	public function testCacheRedisStorageRoundtrip(): void
@@ -241,7 +242,7 @@ class CoverageRound3Test extends TestCase
 			$this->assertStringContainsString('Redis', $e->getMessage());
 		}
 
-		$redis = new \Redis();
+		$redis = new \Ufee\AmoV4\Tests\Support\CountingRedis();
 		$storage = new CacheRedisStorage($api, ['connection' => $redis]);
 		$storage->initialize();
 
@@ -252,7 +253,7 @@ class CoverageRound3Test extends TestCase
 
 		// только Redis, без локального кеша
 		$redisKey = $api->getIntegration('domain') . ':' . $api->client_id . ':' . CacheRedisStorage::FORMAT . ':k2';
-		$redis->setEx($redisKey, 30, (object) ['ok' => 2]);
+		$redis->setEx($redisKey, 30, ['expire_at' => time() + 30, 'payload' => (object) ['ok' => 2]]);
 		$fromRedis = new CacheRedisStorage($api, ['connection' => $redis]);
 		$this->assertTrue((bool) $fromRedis->has('k2'));
 		$this->assertSame(2, $fromRedis->get('k2')->ok);

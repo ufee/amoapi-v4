@@ -178,7 +178,8 @@ class ClassCoverageBoostTest extends TestCase
 		], $api->account());
 		$storage->set('account', $account, 60);
 
-		$user = $api->users()->create(['id' => 9, 'name' => 'Ivan', 'group_id' => 3]);
+		$user = $api->users()->create(['id' => 9, 'name' => 'Ivan', 'rights' => (object) ['group_id' => 3]]);
+		$this->assertNull($api->users()->create(['id' => 10, 'name' => 'NoRights'])->group());
 		$this->assertSame('Sales', $user->group()->name);
 
 		$users = new Users([

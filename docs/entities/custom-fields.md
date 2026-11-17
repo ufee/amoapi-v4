@@ -51,6 +51,8 @@ $enum_values = $field->getEnums();
 $enum_ids = $field->getEnumIds();
 $bool = $field->hasEnum(568345);
 $bool = $field->hasValue('Чебоксары');
+$enum = $field->findEnumById(568345);   // object|null
+$enum = $field->findEnumByCode('WORK'); // по code, у вариантов без code — по value; object|null
 
 foreach ($lead->cf()->all() as $cf) {
     print_r($cf->getValue());

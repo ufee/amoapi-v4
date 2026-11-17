@@ -152,6 +152,9 @@ $api->cache->setStorageFiles('/path/to/cache/storage', [
 ]);
 ```
 
+Запись читается из хранилища (файл или Redis) один раз за процесс, дальше — из памяти до истечения её срока:
+повторные `cache->pipeline()`, `cache->user()`, `cache->customFields()` в цикле по сущностям хранилище не трогают.
+
 ### Очистка кеша
 
 ```php
@@ -160,7 +163,8 @@ $api->cache->clear('pipelines'); // конкретный ключ
 ```
 
 Очистка затрагивает оба слоя: локальный кеш в памяти процесса и постоянное хранилище
-(файлы `{path}/{domain}/{client_id}-v2-{key}.cache` либо ключи Redis `{domain}:{client_id}:v2:{key}`).
+(файлы `{path}/{domain}/{client_id}-v2-{key}.cache` либо ключи Redis `{domain}:{client_id}:v3:{key}`).
+Полная очистка в Redis идёт через `SCAN`, без блокирующего `KEYS`.
 
 Ключи без параметров:
 
@@ -206,6 +210,10 @@ $redis->select(4);
 
 $api->cache->setStorageRedis($redis);
 ```
+
+Формат записей Redis — `v3` (`RedisStorage::FORMAT`): в ключе лежит конверт `{expire_at, payload}`.
+Записи `v2` не читаются и истекают сами, после обновления кеш один раз прогреется заново.
+Нужен сериализатор соединения (`OPT_SERIALIZER`), иначе записи из Redis не прочитаются.
 
 ## События (Callbacks)
 
