@@ -48,7 +48,37 @@ class AccountCfield extends Model
 		}
 		return $ids;
 	}
-	
+
+    /**
+     * Find CF enum by id
+	 * @param int $enum_id
+	 * @return object|null
+     */
+    public function findEnumById(int $enum_id)
+    {
+		foreach ($this->getEnums() as $enum) {
+			if ((int)$enum->id === $enum_id) {
+				return $enum;
+			}
+		}
+		return null;
+	}
+
+    /**
+     * Find CF enum by code; enums without code are matched by value (WORK, MOB у телефонов)
+	 * @param string $code
+	 * @return object|null
+     */
+    public function findEnumByCode(string $code)
+    {
+		foreach ($this->getEnums() as $enum) {
+			if (($enum->code ?? $enum->value ?? null) === $code) {
+				return $enum;
+			}
+		}
+		return null;
+	}
+
     /**
      * Get CF enum values
 	 * @return array

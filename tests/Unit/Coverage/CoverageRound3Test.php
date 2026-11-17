@@ -214,7 +214,8 @@ class CoverageRound3Test extends TestCase
 			$this->assertStringContainsString('Redis', $e->getMessage());
 		}
 
-		$redis = new \Redis();
+		// без живого Redis: phpredis 6 без connect() сам подключается к 127.0.0.1:6379
+		$redis = new \Ufee\AmoV4\Tests\Support\CountingRedis();
 		$storage = new OauthRedisStorage($api, ['connection' => $redis]);
 		$oauth = [
 			'token_type' => 'Bearer',
@@ -227,7 +228,7 @@ class CoverageRound3Test extends TestCase
 		$this->assertSame('ra', $storage->getRaw()['access_token']);
 
 		$emptyApi = $this->makeApiClient(['domain' => 'redis-oauth-empty']);
-		$this->assertFalse((new OauthRedisStorage($emptyApi, ['connection' => new \Redis()]))->getRaw());
+		$this->assertFalse((new OauthRedisStorage($emptyApi, ['connection' => new \Ufee\AmoV4\Tests\Support\CountingRedis()]))->getRaw());
 	}
 
 	public function testCacheRedisStorageRoundtrip(): void

@@ -12,6 +12,10 @@ class User extends Model
 	 */
 	public function group()
 	{
-		return $this->service->instance->cache->account()->userGroups->find('id', +$this->rights->group_id)->first();
+		$group_id = $this->rights->group_id ?? null;
+		if (is_null($group_id)) {
+			return null;
+		}
+		return $this->service->instance->cache->account()->userGroups->find('id', +$group_id)->first();
 	}
 }
